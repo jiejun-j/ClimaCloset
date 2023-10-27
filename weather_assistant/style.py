@@ -48,18 +48,11 @@ css: dict = {
 }
 
 
-# header style: including the title and the dark/light mode toggle button.
+# header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
 # pass the title as a parameter to the Header class.
 class Header(rx.Hstack):
     def __init__(self, title_text="Home"):
         super().__init__(style=css.get("header"))
-        self.toggle = rx.color_mode_button(
-            rx.color_mode_icon(),
-            color_scheme="None",
-            _dark={"color": "white"},
-            _light={"color": "black"},
-            style={"margin-left": "40px"},
-        )
 
         self.title = rx.text(
             title_text,
@@ -69,24 +62,22 @@ class Header(rx.Hstack):
             font_weight="bold",
             style={"flex": 1, "margin-right": "20px"},
         )
-        
-        self.link_weather = rx.link(
-            "Check Weather",
-            href="/",
-            style={"margin-right": "40px", "font-size": "16px"},
+              
+        self.breadcrumbs = rx.breadcrumb(
+            rx.breadcrumb_item(
+                rx.breadcrumb_link("Check Weather", href="/")
+            ),
+            rx.breadcrumb_item(
+                rx.breadcrumb_link("Manage Wardrobe", href="/wardrobe")
+            ),
         )
         
-        self.link_wardrobe = rx.link(
-            "Manage Wardrobe",
-            href="/wardrobe",
-            style={"margin-right": "40px", "font-size": "16px"},
+        self.toggle = rx.color_mode_button(
+            rx.color_mode_icon(),
+            color_scheme="None",
+            _dark={"color": "white"},
+            _light={"color": "black"},
+            style={"margin-left": "40px"},
         )
         
-        self.separator = rx.divider(
-            orientation="vertical",
-            height="14px",
-            border_color="rgba(0,0,0,0.5)",
-            style={"margin-right": "40px"},
-        )
-
-        self.children = [self.title, self.link_weather, self.separator, self.link_wardrobe, self.toggle]
+        self.children = [self.title, self.breadcrumbs, self.toggle]

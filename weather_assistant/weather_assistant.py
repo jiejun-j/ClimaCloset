@@ -121,7 +121,7 @@ def index() -> rx.Component :
 
 
 # wardrobe page: users can manage items in their wardrobe.
-@rx.page(title='Wardrobe Manager', route="/wardrobe")
+@rx.page(title='My Wardrobe', route="/wardrobe")
 def wardrobe_page() -> rx.Component:
         
     wardrobe_header: rx.Hstack = Header("My Wardrobe")
