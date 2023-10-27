@@ -1,8 +1,8 @@
-import reflex as rx                 # Reflex is a Python library for creating web applications.
-from urllib.parse import urlencode  # Encode URL parameters.
+import reflex as rx
+from urllib.parse import urlencode
 from weather_assistant.state import State
 from weather_assistant.style import css, WIDTH, Header
-from weather_assistant.wardrobe_data import Items
+import pandas as pd
 
 
 # main page: the user can input a city name to get the weather and receive clothing advice.
@@ -119,13 +119,19 @@ def index() -> rx.Component :
     )
 
 
+
+
 @rx.page(title='Wardrobe Manager', route="/wardrobe")
 def wardrobe_page() -> rx.Component:
-    
+        
     wardrobe_header: rx.Hstack = Header("My Wardrobe")
     
-    with rx.session() as session:
-        all_data = session.query(Items).all()
+    # Instantiate the State class
+    state = State()
+    # Use the state instance to call fetch_data
+    state.fetch_data()
+    # Convert state.data into a pandas dataframe
+    df = pd.DataFrame(state.data)
     
     return rx.vstack(
         wardrobe_header,
@@ -140,9 +146,13 @@ def wardrobe_page() -> rx.Component:
             ),
             on_submit=State.handle_submit,
         ),
-        rx.heading("Results"),
-        *[rx.text(f"{data.name} {data.type} {data.description}") for data in all_data]    )
-    
+        rx.data_table(
+            data=df,
+            pagination=True,
+            search=True,
+            sort=True
+        ),
+    )
 
 
 

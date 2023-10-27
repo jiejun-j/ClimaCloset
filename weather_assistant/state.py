@@ -3,7 +3,6 @@ import requests
 import asyncio
 from weather_assistant.weather_data import get_weather_request, WEATHER_IMAGE_MAP
 from weather_assistant.wardrobe_data import Items
-from reflex import redirect
 
 
 # The State class keeps track of various attributes related to the user's input and the resulting weather data.
@@ -77,10 +76,7 @@ class State(rx.State):
     
     # Form attributes
     all_items: list[Items] = []
-    
-    def fetch_all_items(self):
-        with rx.session() as session:
-            self.all_items = session.query(Items).all()
+    data: list[dict] = []
     
     def handle_submit(self, form_data:dict):
         with rx.session() as session:
@@ -92,7 +88,17 @@ class State(rx.State):
             session.add(data)
             session.commit()
 
-        self.fetch_all_items()
+        self.fetch_data()
+        #print(form_data)
+    
+    def fetch_data(self):
+        with rx.session() as session:
+            items_list = session.query(Items).all()
+            #print(items_list)
+        self.data = [{"name": item.name, "type": item.type, "description": item.description}
+                     for item in items_list
+                     ]
+        #print (self.data)
         
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
