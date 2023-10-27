@@ -54,11 +54,11 @@ class State(rx.State):
             
             self.city = self.cityname_input
             self.country = data["sys"]["country"]
-            self.temperature = f"{int(data['main']['temperature'])}°C"
+            self.temperature = f"{int(data['main']['temp'])}°C"
             self.humidity = f"{int(data['main']['humidity'])}%"
             self.speed = f"{int(data['wind']['speed'])}km/h"
             self.location = f"{self.city.capitalize()}, {self.country}"
-            self.clothing_advice = get_clothing_advice(int(data['main']['temperature']), data["weather"][0]["main"].lower())
+            self.clothing_advice = get_clothing_advice(int(data['main']['temp']), data["weather"][0]["main"].lower())
             self.weather_condition = data["weather"][0]["main"].lower()
             self.weather_error_message = ""
             
