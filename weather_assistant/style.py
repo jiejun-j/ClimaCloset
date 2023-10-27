@@ -71,7 +71,7 @@ class Header(rx.Hstack):
         )
         
         self.link_weather = rx.link(
-            "Search Weather",
+            "Check Weather",
             href="/",
             style={"margin-right": "40px", "font-size": "16px"},
         )

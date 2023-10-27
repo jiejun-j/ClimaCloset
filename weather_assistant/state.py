@@ -38,7 +38,7 @@ class State(rx.State):
             await self.get_weather_data()
     
     async def give_content_bg(self):
-        await asyncio.sleep(0.75)
+        await asyncio.sleep(0.2)
         if self.content_bg != "#fafafa":
             self.content_bg = "#fafafa"
     
@@ -48,7 +48,7 @@ class State(rx.State):
             
     async def get_weather_data(self):
         response = requests.get(get_weather_request(self.user_input))
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.05)
         
         if response.status_code == 200:
             data = response.json()
@@ -72,6 +72,13 @@ class State(rx.State):
         elif response.status_code != 200:
             self.error_message = "City not found. Please enter a valid city name."
             self.user_input = ""
+        
+        
+        
+    form_data: dict = {}
+    
+    def handle_submit(self, form_data:dict):
+        self.form_data = form_data
             
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
@@ -90,27 +97,3 @@ def get_clothing_advice(temp, weather_condition):
         if "snow" in weather_condition:
             return "Brrr! Snowball fight anyone? Bundle up with a thick coat, gloves, and a hat!"
         return "Freezing cold! Time to rock that winter coat and maybe a scarf and gloves!"
-    
-
-# Add new items
-class AddItems(State):
-    name: str
-    type: str
-    color: str
-    description: str
-    image: str
-    
-    def on_submit(self): 
-        with rx.session() as session:
-            session.add(Items(name=self.name, type=self.type, color=self.color, description=self.description, image=self.image)) 
-            session.commit()
-
-
-# Search items by name
-class QueryWardrobe(State):
-    name: str
-    items: list[Items]
-
-    def on_search(self):
-        with rx.session() as session:
-            self.items = session.query(Items).filter(Items.name.contains(self.name)).all()
