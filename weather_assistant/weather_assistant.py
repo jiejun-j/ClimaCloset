@@ -2,11 +2,12 @@ import reflex as rx                 # Reflex is a Python library for creating we
 from urllib.parse import urlencode  # Encode URL parameters.
 from weather_assistant.state import State
 from weather_assistant.style import css, WIDTH, Header
+from weather_assistant.wardrobe_data import Items
 
 
 # main page: the user can input a city name to get the weather and receive clothing advice.
 @rx.page(title='Weather Assistant')
-def weather_page() -> rx.Component :
+def index() -> rx.Component :
 
     weather_header: rx.Hstack = Header("Weather Assistant")
     
@@ -122,51 +123,30 @@ def weather_page() -> rx.Component :
 def wardrobe_page() -> rx.Component:
     
     wardrobe_header: rx.Hstack = Header("My Wardrobe")
-
+    
+    with rx.session() as session:
+        all_data = session.query(Items).all()
+    
     return rx.vstack(
-        
         wardrobe_header,
-        
         # input area
         rx.form(
             rx.vstack(
-                rx.input(
-                    placeholder="name",
-                    id="name",
-                ),
-                rx.input(
-                    placeholder="type",
-                    id="type",
-                ),
-                rx.input(
-                    placeholder="color",
-                    id="color",
-                ),
-                rx.input(
-                    placeholder="preference_temperature",
-                    id="preference_temperature",
-                ),
-                rx.input(
-                    placeholder="image",
-                    id="image",
-                ),
-                rx.button(
-                    "Submmit", 
-                    type_="submit"
-                ),
+                rx.input(placeholder="name", id="name"),
+                rx.input(placeholder="type", id="type"),
+                rx.input(placeholder="description", id="description"),
+                rx.button("Submit", type_="submit"),
                 style=css.get("stack"),
             ),
             on_submit=State.handle_submit,
         ),
-
         rx.heading("Results"),
-        rx.text(State.form_data.to_string()),
-    )
+        *[rx.text(f"{data.name} {data.type} {data.description}") for data in all_data]    )
     
 
 
 
 app = rx.App(style=css.get("app"))              # Initialize the main app with the defined styles.
-app.add_page(weather_page)                             # Add the main page to the app.
+app.add_page(index)                             # Add the main page to the app.
 app.add_page(wardrobe_page, route="/wardrobe")  # Add the wardrobe page to the app.
 app.compile()                                   # Compile the app
