@@ -5,10 +5,10 @@ from weather_assistant.style import css, WIDTH, Header
 import pandas as pd
 
 
-# main page: the user can input a city name to get the weather and receive clothing advice.
+# weather page: users can check the weather and receive clothing advice.
 @rx.page(title='Weather Assistant')
 def index() -> rx.Component :
-
+ 
     weather_header: rx.Hstack = Header("Weather Assistant")
     
     return rx.vstack(
@@ -17,15 +17,15 @@ def index() -> rx.Component :
         # input area
         rx.vstack(
             rx.input(
-                value=State.user_input,
+                value=State.cityname_input,
                 on_change=State.get_input_value,
                 on_key_down=State.handle_key_press,
                 style=css.get("input"),
                 placeholder="Enter a city name to get the weather",
                 ),
             rx.cond(
-                State.error_message, 
-                rx.text(State.error_message, color="#3e8be7", style=css.get("input")),
+                State.weather_error_message, 
+                rx.text(State.weather_error_message, color="#3e8be7", style=css.get("input")),
                 None
             ),
             style=css.get("stack"),
@@ -64,7 +64,7 @@ def index() -> rx.Component :
             rx.container(
                 rx.hstack(
                     rx.vstack(
-                        rx.heading(State.temp, size="2xl"),
+                        rx.heading(State.temperature, size="2xl"),
                         rx.text(
                             "TEMPERATURE",
                             font_size="10px",
@@ -120,7 +120,7 @@ def index() -> rx.Component :
 
 
 
-
+# wardrobe page: users can manage items in their wardrobe.
 @rx.page(title='Wardrobe Manager', route="/wardrobe")
 def wardrobe_page() -> rx.Component:
         
@@ -135,8 +135,8 @@ def wardrobe_page() -> rx.Component:
     
     return rx.vstack(
         wardrobe_header,
-        # input area
-        rx.form(
+        # input area        
+        rx.form(            
             rx.vstack(
                 rx.input(placeholder="name", id="name"),
                 rx.input(placeholder="type", id="type"),
