@@ -113,4 +113,4 @@ class QueryWardrobe(State):
 
     def on_search(self):
         with rx.session() as session:
-            self.items = session.query(Items).filter(Items.name.contains(self.name)).all()   
+            self.items = session.query(Items).filter(Items.name.contains(self.name)).all()
