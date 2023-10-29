@@ -74,7 +74,7 @@ class Header(rx.Hstack):
         
         self.toggle = rx.color_mode_button(
             rx.color_mode_icon(),
-            color_scheme="None",
+            color_scheme="gray",
             _dark={"color": "white"},
             _light={"color": "black"},
             style={"margin-left": "40px"},
