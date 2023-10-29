@@ -155,6 +155,7 @@ def wardrobe_page() -> rx.Component:
     )
 
 
+
 app = rx.App(style=css.get("app"))              # Initialize the main app with the defined styles.
 app.add_page(index)                             # Add the main page to the app.
 app.add_page(wardrobe_page, route="/wardrobe")  # Add the wardrobe page to the app.
