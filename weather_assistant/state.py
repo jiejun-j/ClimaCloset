@@ -3,6 +3,7 @@ import requests
 import asyncio
 from weather_assistant.weather_data import get_weather_request, WEATHER_IMAGE_MAP
 from weather_assistant.wardrobe_data import Items
+from typing import List, Dict
 
 
 # The State class keeps track of various attributes related to the user's input and the resulting weather data.
@@ -75,8 +76,12 @@ class State(rx.State):
     
     # Wardrobe attributes
     # Create a session and query the table to add a new record to the database.
-    all_items: list[Items] = []
-    data: list[dict] = []
+    all_items: List[Items] = []
+    data: List[Dict] = []
+    def __init__(self):
+        super().__init__()
+        self.all_items = []
+        self.data = []
     
     def handle_submit(self, form_data:dict):
         with rx.session() as session:
