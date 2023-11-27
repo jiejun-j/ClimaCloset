@@ -2,7 +2,6 @@ import reflex as rx
 from urllib.parse import urlencode
 import pandas as pd
 import requests
-import asyncio
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -177,7 +176,6 @@ class State(rx.State):
             await self.get_weather_data()
     
     async def give_content_bg(self):
-        await asyncio.sleep(0.2)
         if self.content_bg != "#fafafa":
             self.content_bg = "#fafafa"
     
@@ -188,7 +186,6 @@ class State(rx.State):
     async def get_weather_data(self):
         city_name = self.cityname_input
         response = requests.get(get_weather_request(city_name))
-        await asyncio.sleep(0.05)
         
         # If the city name is found, display the weather data.
         if response.status_code == 200:
