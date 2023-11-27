@@ -1,15 +1,15 @@
 import reflex as rx
-from urllib.parse import urlencode
 import pandas as pd
 import requests
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlencode
 from typing import List, Dict
 from sqlmodel import SQLModel, Field, create_engine, Session
 
-# style sheet
+# CSS Stylesheet
+# Defines styles for various components
 WIDTH: list[str] = ["90%", "80%", "70%", "65%", "55%"]
-
 css: dict = {
     "app": {"_dark": {"bg": "#1f2028"}},
     "main": {"width": "100%", "height": "100vh"},
@@ -55,8 +55,8 @@ css: dict = {
 }
 
 
-# header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
-# pass the title as a parameter to the Header class.
+# Header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
+# Pass the title as a parameter to the Header class.
 class Header(rx.Hstack):
     def __init__(self, title_text="Home"):
         super().__init__(style=css.get("header"))
@@ -88,16 +88,15 @@ class Header(rx.Hstack):
         )
         
         self.children = [self.title, self.breadcrumbs, self.toggle]
+        
 
-# Weather Data: The following code is used to retrieve weather data from the OpenWeatherMap API.
-# Get Weather API key
+# Weather Data: retrieve data from the OpenWeatherMap API.
 # Get the API key from the environment variables.
 load_dotenv()
 API_KEY: str = os.getenv("KEY")
 
 
 # A dictionary mapping different weather conditions to their respective image sources.
-# For simplicity, multiple weather conditions are mapped to the 'mist.png' image.
 WEATHER_IMAGE_MAP = {
     "thunderstorm": "/thunderstorm.png",
     "drizzle": "/drizzle.png",
@@ -117,7 +116,7 @@ WEATHER_IMAGE_MAP = {
 }
 
 
-# API request: Constructs the URL based on the given city name.
+# API request: construct the URL based on the given city name.
 def get_weather_request(city: str):
     base_url = "https://api.openweathermap.org/data/2.5/weather"
     query_parameters = {
@@ -132,7 +131,7 @@ def get_weather_request(city: str):
     return full_url
 
 
-# Wardrobe data: The following code is used to retrieve and manage wardrobe data from the database.
+# Wardrobe data: database setup and model definition
 DATABASE_URL = "sqlite:///reflex.db"
 engine = create_engine(DATABASE_URL)
 
@@ -145,7 +144,7 @@ class Items(SQLModel, table=True):
 SQLModel.metadata.create_all(engine)
 
 
-# The State class keeps track of various attributes related to the user's input and the resulting weather data.
+# The state defines all the variables in an app that can change, as well as the functions that change them.
 class State(rx.State):
     # Weather attributes
     location: str = ""
@@ -268,7 +267,7 @@ def get_clothing_advice(temperature, weather_condition):
 # Instantiate the State class
 state = State()
 
-# weather page: users can check the weather and receive clothing advice.
+# Weather page: users can check the weather and receive clothing advice.
 @rx.page(title='Weather Assistant')
 def index() -> rx.Component :
  
@@ -382,7 +381,7 @@ def index() -> rx.Component :
     )
 
 
-# wardrobe page: users can manage items in their wardrobe.
+# Wardrobe page: users can manage items in their wardrobe.
 @rx.page(title='My Wardrobe', route="/wardrobe")
 def wardrobe_page() -> rx.Component:
         
@@ -416,6 +415,7 @@ def wardrobe_page() -> rx.Component:
 
 
 
+# Initialize and configure the application
 app = rx.App(style=css.get("app"))              # Initialize the main app with the defined styles.
 app.add_page(index)                             # Add the main page to the app.
 app.add_page(wardrobe_page, route="/wardrobe")  # Add the wardrobe page to the app.
