@@ -208,7 +208,7 @@ class State(rx.State):
         elif response.status_code != 200:
             self.weather_error_message = "City not found. Please enter a valid city name."
             self.cityname_input = ""
-        
+
     
     # Wardrobe attributes
     # Create a session and query the table to add a new record to the database.
@@ -239,10 +239,12 @@ class State(rx.State):
                      ]
 
     # Delete the selected item from the database.
-    def delete_item(self, name):
+    def delete_latest_item(self):
         with rx.session() as session:
-            session.query(Items).filter_by(name=name).delete()
-            session.commit()
+            latest_item = session.query(Items).order_by(Items.id.desc()).first()
+            if latest_item:
+                session.delete(latest_item)
+                session.commit()
         self.fetch_data()
     
 
@@ -408,6 +410,11 @@ def wardrobe_page() -> rx.Component:
             pagination=True,
             search=True,
             sort=True
+        ),
+        rx.button(
+            "Delete Latest Item", 
+            variant="solid",
+            on_click=State.delete_latest_item,
         ),
     )
 
