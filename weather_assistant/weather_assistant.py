@@ -5,14 +5,13 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import urlencode
 from typing import List, Dict
-from sqlmodel import SQLModel, Field, create_engine, Session
+from sqlmodel import SQLModel, Field, create_engine
 
 # CSS Stylesheet
 # Defines styles for various components
 WIDTH: list[str] = ["90%", "80%", "70%", "65%", "55%"]
 css: dict = {
     "app": {"_dark": {"bg": "#1f2028"}},
-    "main": {"width": "100%", "height": "100vh"},
     "header": {
         "width":"100%",
         "height":"60px",
@@ -376,8 +375,7 @@ def index() -> rx.Component :
         
         # clothing advice
         rx.text(State.clothing_advice, font_weight="bold", style=css.get("input")),
-        
-        style=css.get("main"),  
+
     )
 
 
@@ -412,7 +410,6 @@ def wardrobe_page() -> rx.Component:
             sort=True
         ),
     )
-
 
 
 # Initialize and configure the application
