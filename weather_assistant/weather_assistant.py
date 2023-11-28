@@ -234,7 +234,7 @@ class State(rx.State):
     def fetch_data(self):
         with rx.session() as session:
             items_list = session.query(Items).all()
-        self.data = [{"name": item.name, "type": item.type, "description": item.description}
+        self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
                      for item in items_list
                      ]
 
