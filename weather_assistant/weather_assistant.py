@@ -369,7 +369,7 @@ def index() -> rx.Component :
                         html_width="100px",
                         ),
                         rx.heading(State.location, size="md"),
-                        rx.text(State.weather_condition, font_weight="bold", opacity="0.6"),
+                        rx.text(State.weather_condition.upper(), font_weight="bold", opacity="0.8"),
                         style=css.get("weather_image"),
                     ),
                 width=["35%"],
