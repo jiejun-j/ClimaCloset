@@ -78,6 +78,7 @@ css: dict = {
         "font_size": "10px",
         "font_weight": "bold",
         "opacity": "0.6",
+        "_dark": {"color": "#000000"},
     },
 }
 
@@ -381,7 +382,7 @@ def index() -> rx.Component :
                 rx.vstack(
                     rx.hstack(
                         rx.vstack(
-                            rx.heading(State.temperature, size="xl"),
+                            rx.heading(State.temperature, color="black", size="xl"),
                             rx.text(
                                 "TEMPERATURE",
                                 style=css.get("weather_data_text"),
@@ -389,7 +390,7 @@ def index() -> rx.Component :
                                 spacing="0",                       
                             ), 
                         rx.vstack(
-                            rx.heading(State.speed, size="xl"),
+                            rx.heading(State.speed, color="black", size="xl"),
                             rx.text(
                                 "WIND SPEED",
                                 style=css.get("weather_data_text"),
@@ -397,7 +398,7 @@ def index() -> rx.Component :
                                 spacing="0",                     
                             ),
                         rx.vstack(
-                            rx.heading(State.humidity, size="xl"),
+                            rx.heading(State.humidity, color="black", size="xl"),
                             rx.text(
                                 "HUMIDITY",
                                 style=css.get("weather_data_text"),
@@ -412,7 +413,7 @@ def index() -> rx.Component :
                     rx.hstack(
                         rx.vstack(
                             rx.vstack(
-                                rx.heading(State.max_temp, size="md"),
+                                rx.heading(State.max_temp, color="black", size="md"),
                                 rx.text(
                                     "HIGH",
                                     style=css.get("weather_data_text"),
@@ -420,7 +421,7 @@ def index() -> rx.Component :
                                     spacing="0",                       
                                 ),   
                             rx.vstack(
-                                rx.heading(State.min_temp, size="md"),
+                                rx.heading(State.min_temp, color="black", size="md"),
                                 rx.text(
                                     "LOW",
                                     style=css.get("weather_data_text"),
@@ -430,7 +431,7 @@ def index() -> rx.Component :
                             ),
                         rx.vstack(
                             rx.vstack(
-                                rx.heading(State.sunrise_time, size="md"),
+                                rx.heading(State.sunrise_time, color="black", size="md"),
                                 rx.text(
                                     "SUNRISE",
                                     style=css.get("weather_data_text"),
@@ -438,7 +439,7 @@ def index() -> rx.Component :
                                     spacing="0",                            
                                 ),
                             rx.vstack(
-                                rx.heading(State.sunset_time, size="md"),
+                                rx.heading(State.sunset_time, color="black", size="md"),
                                 rx.text(
                                     "SUNSET",
                                     style=css.get("weather_data_text"),
