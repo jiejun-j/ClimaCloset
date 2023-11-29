@@ -36,12 +36,25 @@ css: dict = {
         "font size": "32px",
         "transition": "all 300ms ease",
     },
-    "stack":{
+    "errormessage":{
+        "width": WIDTH,
+        "height": "70px",
+        "color": "#3e8be7",
+        "text_align": "center",
+        "font size": "32px",
+        "transition": "all 300ms ease",
+    },
+    "single_stack":{
         "width": "100%",
         "align_items": "center",
         "justify_content": "center",
         "display": "flex",
         "padding_top": "4rem",
+    },
+    "multiple_stack":{
+        "align_items": "center",
+        "justify_content": "space-between",
+        "display": "flex",
     },
     "content":{
         "width": WIDTH,
@@ -51,7 +64,21 @@ css: dict = {
         "display": "flex",
         "overflow": "hidden",
         "box_shadow": "0px 10px 20px 0px rgba(0,0,0,0.5)",
-    }, 
+    },
+    "weather_image":{
+        "color": "white",
+        "spacing": "0",
+        "width": "100%",
+        "height": "inherit",
+        "display": "flex",
+        "align_items": "center",
+        "justify_content": "center",
+    },
+    "weather_data_text":{
+        "font_size": "10px",
+        "font_weight": "bold",
+        "opacity": "0.6",
+    },
 }
 
 
@@ -183,8 +210,8 @@ class State(rx.State):
             self.content_bg = "#fafafa"
     
     def expand_content_height(self):
-        if self.content_height != "250px":
-            self.content_height = "250px"
+        if self.content_height != "300px":
+            self.content_height = "300px"
             
     async def get_weather_data(self):
         city_name = self.cityname_input
@@ -316,15 +343,15 @@ def index() -> rx.Component :
                 value=State.cityname_input,
                 on_change=State.get_input_value,
                 on_key_down=State.handle_key_press,
-                style=css.get("input"),
                 placeholder="Enter a city name to get the weather",
+                style=css.get("input"),
                 ),
             rx.cond(
                 State.weather_error_message, 
-                rx.text(State.weather_error_message, color="#3e8be7", style=css.get("input")),
+                rx.text(State.weather_error_message, style=css.get("errormessage")),
                 None
             ),
-            style=css.get("stack"),
+            style=css.get("single_stack"),
         ), 
     
         # blank row
@@ -339,103 +366,94 @@ def index() -> rx.Component :
                         src=State.image_src,
                         html_height="100px",
                         html_width="100px",
-                        #filter="brightness(0) invert(1)",
                         ),
                         rx.heading(State.location, size="md"),
                         rx.text(State.weather_condition, font_weight="bold", opacity="0.6"),
-                        color="white",
-                        spacing="0",
-                        width="100%",
-                        height="inherit",
-                        display="flex",
-                        align_items="center",
-                        justify_content="center",
+                        style=css.get("weather_image"),
                     ),
-                width=["30%", "30%", "30%", "35%", "35%"],
+                width=["35%"],
                 height="inherit",
                 bg="linear-gradient(220deg, #3e8be7 2.5%, #87cefa 97%)",  
                 ),
             
             # weather details
             rx.container(
-                rx.hstack(
-                    rx.vstack(
-                        rx.heading(State.temperature, size="xl"),
-                        rx.text(
-                            "TEMPERATURE",
-                            font_size="10px",
-                            font_weight="bold",
-                            opacity="0.6",
-                            ),
-                            spacing="0",                       
-                        ), 
-                    rx.vstack(
-                        rx.heading(State.speed, size="xl"),
-                        rx.text(
-                            "WIND SPEED",
-                            font_size="10px",
-                            font_weight="bold",
-                            opacity="0.6",
-                            ),
-                            spacing="0",                       
-                        ),
-                    rx.vstack(
-                        rx.heading(State.humidity, size="xl"),
-                        rx.text(
-                            "HUMIDITY",
-                            font_size="10px",
-                            font_weight="bold",
-                            opacity="0.6",
-                            ),
-                            spacing="0",                       
-                        ),
-                    rx.vstack(
+                rx.vstack(
+                    rx.hstack(
                         rx.vstack(
-                            rx.heading("H: " + State.max_temp, size="sm"),
+                            rx.heading(State.temperature, size="xl"),
                             rx.text(
-                                font_size="10px",
-                                opacity="0.6",
-                                ),
-                                spacing="0",                       
-                            ),   
-                            rx.vstack(
-                            rx.heading("L: " + State.min_temp, size="sm"),
-                            rx.text(
-                                font_size="10px",
-                                opacity="0.6",
+                                "TEMPERATURE",
+                                style=css.get("weather_data_text"),
                                 ),
                                 spacing="0",                       
                             ), 
-                        ),
-                    rx.vstack(
                         rx.vstack(
-                            rx.heading(State.sunrise_time, size="sm"),
+                            rx.heading(State.speed, size="xl"),
                             rx.text(
-                                "SUNRISE",
-                                font_size="10px",
-                                opacity="0.6",
+                                "WIND SPEED",
+                                style=css.get("weather_data_text"),
                                 ),
-                                spacing="0",                       
+                                spacing="0",                     
                             ),
+                        rx.vstack(
+                            rx.heading(State.humidity, size="xl"),
+                            rx.text(
+                                "HUMIDITY",
+                                style=css.get("weather_data_text"),
+                                ),
+                                spacing="0",                    
+                            ),
+                        style=css.get("multiple_stack"),
+                        width=["90%"],
+                        padding_bottom="1.5rem",
+                        ),
+
+                    rx.hstack(
+                        rx.vstack(
                             rx.vstack(
-                                rx.heading(State.sunset_time, size="sm"),
+                                rx.heading(State.max_temp, size="md"),
                                 rx.text(
-                                    "SUNSET",
-                                    font_size="10px",
-                                    opacity="0.6",
+                                    "HIGH",
+                                    style=css.get("weather_data_text"),
                                     ),
                                     spacing="0",                       
+                                ),   
+                            rx.vstack(
+                                rx.heading(State.min_temp, size="md"),
+                                rx.text(
+                                    "LOW",
+                                    style=css.get("weather_data_text"),
+                                    ),
+                                    spacing="0",                          
+                                ), 
                             ),
-                        ), 
-                    width="100%",
+                        rx.vstack(
+                            rx.vstack(
+                                rx.heading(State.sunrise_time, size="md"),
+                                rx.text(
+                                    "SUNRISE",
+                                    style=css.get("weather_data_text"),
+                                    ),
+                                    spacing="0",                            
+                                ),
+                            rx.vstack(
+                                rx.heading(State.sunset_time, size="md"),
+                                rx.text(
+                                    "SUNSET",
+                                    style=css.get("weather_data_text"),
+                                    ),
+                                    spacing="0",                             
+                                ),
+                            ), 
+                        style=css.get("multiple_stack"),
+                        width=["70%"],
+                        padding_top="1.5rem",
+                        ),
+                    width=["100%"],
                     height="inherit",
-                    display="flex",
-                    align_items="center",
-                    justify_content="space-between",
-                    color="black",
                     ),
-                width=["70%", "70%", "70%", "65%", "65%"],
-                height="inherit",
+                width=["65%"],
                 ),
             height=State.content_height,
             bg=State.content_bg,
@@ -447,8 +465,7 @@ def index() -> rx.Component :
         rx.divider(height="2rem", border_color="transparent"), 
         
         # clothing advice
-        rx.text(State.clothing_advice, font_weight="bold", style=css.get("input")),
-
+        rx.text(State.clothing_advice, font_weight="bold", color="#3e8be7",),
     )
 
 
@@ -474,7 +491,7 @@ def wardrobe_page() -> rx.Component:
                         rx.input(placeholder="type", id="type"),
                         rx.input(placeholder="description", id="description"),
                         rx.button("Add Item", type_="submit"),
-                        style=css.get("stack"),
+                        #style=css.get("narrow_stack"),
                     ),
                     on_submit=State.handle_submit,
                 ),
@@ -491,23 +508,28 @@ def wardrobe_page() -> rx.Component:
                             variant="solid",
                             on_click=State.delete_selected_item
                         ),
+                        #style=css.get("narrow_stack"),
                     ),
                 ),
                 rx.divider(height="5rem", border_color="gray", orientation="vertical"),
                 rx.form(
-                    rx.spacer(height="1rem"),
-                    rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1]), color="gray",),
-                    rx.spacer(height="1rem"),
-                    rx.button(
-                        "Delete Latest Item", 
-                        variant="solid",
-                        on_click=State.delete_latest_item,
+                    rx.stack(
+                        rx.spacer(height="1rem"),
+                        rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1]), color="gray",),
+                        rx.spacer(height="1rem"),
+                        rx.button(
+                            "Delete Latest Item", 
+                            variant="solid",
+                            on_click=State.delete_latest_item,
+                            ),
+                        #style=css.get("narrow_stack"),
                     ),
                 ),
                 width="95%",
                 justify_content="space-between",
+                #align_items="flex-end",
             ),
-            #header=rx.heading("Manage My Wardrobe", size="md"),
+            
             footer=rx.text(
                 "To view the latest updates in your wardrobe, please restart the application after adding or deleting items. ", 
                 size="sm",
@@ -516,7 +538,8 @@ def wardrobe_page() -> rx.Component:
             width="95%",
         ),
         
-        rx.box(height="2rem"),
+        # blank row
+        rx.divider(height="2rem", border_color="transparent"), 
         
         rx.hstack(
             rx.data_table(
