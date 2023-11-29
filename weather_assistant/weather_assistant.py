@@ -2,6 +2,7 @@ import reflex as rx
 import pandas as pd
 import requests
 import os
+import datetime
 from dotenv import load_dotenv
 from urllib.parse import urlencode
 from typing import List, Dict
@@ -154,6 +155,10 @@ class State(rx.State):
     humidity: str = ""
     weather_condition: str = ""
     image_src: str = ""
+    max_temp: str = ""
+    min_temp: str = ""
+    sunrise_time: str = ""
+    sunset_time: str = ""
     
     # Page content attributes
     cityname_input: str = ""
@@ -198,6 +203,19 @@ class State(rx.State):
             self.clothing_advice = get_clothing_advice(int(data['main']['temp']), data["weather"][0]["main"].lower())
             self.weather_condition = data["weather"][0]["main"].lower()
             self.weather_error_message = ""
+            
+            self.max_temp = f"{int(data['main']['temp_max'])}°C"
+            self.min_temp = f"{int(data['main']['temp_min'])}°C"
+            
+            # Convert sunrise and sunset times to human-readable format
+            sunrise_timestamp = int(data['sys']['sunrise'])
+            sunset_timestamp = int(data['sys']['sunset'])
+            
+             # Assume the timestamp is in local time
+            local_tz = datetime.timezone(datetime.timedelta(seconds=data['timezone']))
+    
+            self.sunrise_time = datetime.datetime.fromtimestamp(sunrise_timestamp, tz=local_tz).strftime('%I:%M %p')
+            self.sunset_time = datetime.datetime.fromtimestamp(sunset_timestamp, tz=local_tz).strftime('%I:%M %p')
             
             # set the type of image based on the weather.
             weather_main = data["weather"][0]["main"].lower()
@@ -310,7 +328,7 @@ def index() -> rx.Component :
         ), 
     
         # blank row
-        rx.divider(height="2em", border_color="transparent"),
+        rx.divider(height="2rem", border_color="transparent"),
         
         # weather data
         rx.hstack(
@@ -342,7 +360,7 @@ def index() -> rx.Component :
             rx.container(
                 rx.hstack(
                     rx.vstack(
-                        rx.heading(State.temperature, size="2xl"),
+                        rx.heading(State.temperature, size="xl"),
                         rx.text(
                             "TEMPERATURE",
                             font_size="10px",
@@ -352,7 +370,7 @@ def index() -> rx.Component :
                             spacing="0",                       
                         ), 
                     rx.vstack(
-                        rx.heading(State.speed, size="2xl"),
+                        rx.heading(State.speed, size="xl"),
                         rx.text(
                             "WIND SPEED",
                             font_size="10px",
@@ -362,7 +380,7 @@ def index() -> rx.Component :
                             spacing="0",                       
                         ),
                     rx.vstack(
-                        rx.heading(State.humidity, size="2xl"),
+                        rx.heading(State.humidity, size="xl"),
                         rx.text(
                             "HUMIDITY",
                             font_size="10px",
@@ -370,7 +388,45 @@ def index() -> rx.Component :
                             opacity="0.6",
                             ),
                             spacing="0",                       
-                        ),          
+                        ),
+                    rx.vstack(
+                        rx.vstack(
+                            rx.heading("H: " + State.max_temp, size="sm"),
+                            rx.text(
+                                font_size="10px",
+                                opacity="0.6",
+                                ),
+                                spacing="0",                       
+                            ),   
+                            rx.vstack(
+                            rx.heading("L: " + State.min_temp, size="sm"),
+                            rx.text(
+                                font_size="10px",
+                                opacity="0.6",
+                                ),
+                                spacing="0",                       
+                            ), 
+                        ),
+                    rx.vstack(
+                        rx.vstack(
+                            rx.heading(State.sunrise_time, size="sm"),
+                            rx.text(
+                                "SUNRISE",
+                                font_size="10px",
+                                opacity="0.6",
+                                ),
+                                spacing="0",                       
+                            ),
+                            rx.vstack(
+                                rx.heading(State.sunset_time, size="sm"),
+                                rx.text(
+                                    "SUNSET",
+                                    font_size="10px",
+                                    opacity="0.6",
+                                    ),
+                                    spacing="0",                       
+                            ),
+                        ), 
                     width="100%",
                     height="inherit",
                     display="flex",
@@ -388,7 +444,7 @@ def index() -> rx.Component :
         ),
         
         # blank row
-        rx.divider(height="2em", border_color="transparent"), 
+        rx.divider(height="2rem", border_color="transparent"), 
         
         # clothing advice
         rx.text(State.clothing_advice, font_weight="bold", style=css.get("input")),
@@ -409,7 +465,7 @@ def wardrobe_page() -> rx.Component:
     
     return rx.vstack(
         wardrobe_header,
-        rx.box(height="2em"),
+        rx.box(height="2rem"),
         rx.card(
             rx.hstack(
                 rx.form(            
@@ -422,7 +478,7 @@ def wardrobe_page() -> rx.Component:
                     ),
                     on_submit=State.handle_submit,
                 ),
-                rx.divider(height="5em", border_color="gray", orientation="vertical"),
+                rx.divider(height="5rem", border_color="gray", orientation="vertical"),
                 rx.form(
                     rx.vstack(
                         rx.input(
@@ -437,11 +493,11 @@ def wardrobe_page() -> rx.Component:
                         ),
                     ),
                 ),
-                rx.divider(height="5em", border_color="gray", orientation="vertical"),
+                rx.divider(height="5rem", border_color="gray", orientation="vertical"),
                 rx.form(
-                    rx.spacer(height="1em"),
-                    rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1])),
-                    rx.spacer(height="1em"),
+                    rx.spacer(height="1rem"),
+                    rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1]), color="gray",),
+                    rx.spacer(height="1rem"),
                     rx.button(
                         "Delete Latest Item", 
                         variant="solid",
@@ -460,7 +516,7 @@ def wardrobe_page() -> rx.Component:
             width="95%",
         ),
         
-        rx.box(height="2em"),
+        rx.box(height="2rem"),
         
         rx.hstack(
             rx.data_table(
