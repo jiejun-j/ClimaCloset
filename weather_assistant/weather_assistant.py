@@ -74,49 +74,29 @@ css: dict = {
         "align_items": "center",
         "justify_content": "center",
     },
-    "weather_data_text":{
-        "font_size": "10px",
+    "weather_data_attributes":{
+        "font_size": "12px",
         "font_weight": "bold",
         "opacity": "0.6",
         "_dark": {"color": "#000000"},
     },
-}
-
-
-# Header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
-# Pass the title as a parameter to the Header class.
-class Header(rx.Hstack):
-    def __init__(self, title_text="Home"):
-        super().__init__(style=css.get("header"))
-
-        self.title = rx.text(
-            title_text,
-            font_size="24px",
-            background_image="linear-gradient(130deg, #3e8be7 40%, #87cefa 80%)",
-            background_clip="text",
-            font_weight="bold",
-            style={"flex": 1, "margin-right": "20px"},
-        )
-              
-        self.breadcrumbs = rx.breadcrumb(
-            rx.breadcrumb_item(
-                rx.breadcrumb_link("Check Weather", href="/")
-            ),
-            rx.breadcrumb_item(
-                rx.breadcrumb_link("Manage Wardrobe", href="/wardrobe")
-            ),
-        )
-        
-        self.toggle = rx.color_mode_button(
-            rx.color_mode_icon(),
-            color_scheme="gray",
-            _dark={"color": "white"},
-            _light={"color": "black"},
-            style={"margin-left": "40px"},
-        )
-        
-        self.children = [self.title, self.breadcrumbs, self.toggle]
-        
+    "weather_data_big_numbers":{
+        "font_size": "45px",
+        "font_weight": "bold",
+        "_dark": {"color": "#000000"},
+    },
+    "weather_data_small_numbers":{
+        "font_size": "24px",
+        "font_weight": "bold",
+        "_dark": {"color": "#000000"},
+    },
+    "weather_data_measurement":{
+        "font_size": "24px",
+        "font_weight": "bold",
+        "_dark": {"color": "#000000"},
+        "height": "18px",
+    },
+}        
 
 # Weather Data: retrieve data from the OpenWeatherMap API.
 # Get the API key from the environment variables.
@@ -329,6 +309,42 @@ def get_clothing_advice(temperature, weather_condition):
 # Instantiate the State class
 state = State()
 
+
+# Header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
+# Pass the title as a parameter to the Header class.
+class Header(rx.Hstack):
+    def __init__(self, title_text="Home"):
+        super().__init__(style=css.get("header"))
+
+        self.title = rx.text(
+            title_text,
+            font_size="24px",
+            background_image="linear-gradient(130deg, #3e8be7 40%, #87cefa 80%)",
+            background_clip="text",
+            font_weight="bold",
+            style={"flex": 1, "margin-right": "20px"},
+        )
+              
+        self.breadcrumbs = rx.breadcrumb(
+            rx.breadcrumb_item(
+                rx.breadcrumb_link("Check Weather", href="/")
+            ),
+            rx.breadcrumb_item(
+                rx.breadcrumb_link("Manage Wardrobe", href="/wardrobe")
+            ),
+        )
+        
+        self.toggle = rx.color_mode_button(
+            rx.color_mode_icon(),
+            color_scheme="gray",
+            _dark={"color": "white"},
+            _light={"color": "black"},
+            style={"margin-left": "40px"},
+        )
+        
+        self.children = [self.title, self.breadcrumbs, self.toggle]
+
+
 # Weather page: users can check the weather and receive clothing advice.
 @rx.page(title='Weather Assistant')
 def index() -> rx.Component :
@@ -383,36 +399,28 @@ def index() -> rx.Component :
                     rx.hstack(
                         rx.vstack(
                             rx.hstack(
-                                rx.heading(State.temperature, size="xl"),
-                                rx.heading("°C", size="md"),
+                                rx.heading(State.temperature, style=css.get("weather_data_big_numbers")),
+                                rx.heading("°C", style=css.get("weather_data_measurement"),),
+                                    vertical_align="bottom",
                                       ),
-                            rx.text(
-                                "TEMPERATURE",
-                                style=css.get("weather_data_text"),
-                                ),
-                                spacing="0",                       
+                            rx.text("TEMPERATURE", style=css.get("weather_data_attributes"),),
+                                spacing="0",
                             ), 
                         rx.vstack(
                             rx.hstack(
-                                rx.heading(State.humidity, size="xl"),
-                                rx.heading("%", size="md"),
+                                rx.heading(State.humidity, style=css.get("weather_data_big_numbers")),
+                                rx.heading("%", style=css.get("weather_data_measurement"),),
                                       ),
-                            rx.text(
-                                "HUMIDITY",
-                                style=css.get("weather_data_text"),
-                                ),
-                                spacing="0",                    
+                            rx.text("HUMIDITY", style=css.get("weather_data_attributes"),),
+                                spacing="0",
                             ),
                         rx.vstack(
                             rx.hstack(
-                                rx.heading(State.speed, size="xl"),
-                                rx.heading("km/h", size="md"),
+                                rx.heading(State.speed, style=css.get("weather_data_big_numbers")),
+                                rx.heading("km/h", style=css.get("weather_data_measurement"),),
                                       ),
-                            rx.text(
-                                "WIND SPEED",
-                                style=css.get("weather_data_text"),
-                                ),
-                                spacing="0",                     
+                            rx.text("WIND SPEED", style=css.get("weather_data_attributes"),),
+                                spacing="0",
                             ),
                         style=css.get("multiple_stack"),
                         width=["90%"],
@@ -421,19 +429,19 @@ def index() -> rx.Component :
 
                     rx.hstack(
                         rx.vstack(
-                            rx.heading(State.min_temp + " ~ " + State.max_temp, color="black", size="md"),
-                            rx.text(
-                                "LOW ~ HIGH",
-                                style=css.get("weather_data_text"),
+                            rx.heading(
+                                State.min_temp + " ~ " + State.max_temp, 
+                                style=css.get("weather_data_small_numbers"),
                                 ),
+                            rx.text("LOW ~ HIGH", style=css.get("weather_data_attributes"),),
                                 spacing="0",                   
                             ),   
                         rx.vstack(
-                            rx.heading(State.sunrise_time + " ~ " + State.sunset_time, color="black", size="md"),
-                            rx.text(
-                                "SUNRISE ~ SUNSET",
-                                style=css.get("weather_data_text"),
+                            rx.heading(
+                                State.sunrise_time + " ~ " + State.sunset_time, 
+                                style=css.get("weather_data_small_numbers"),
                                 ),
+                            rx.text("SUNRISE ~ SUNSET", style=css.get("weather_data_attributes"),),
                                 spacing="0",
                             ), 
                         style=css.get("multiple_stack"),
@@ -451,11 +459,9 @@ def index() -> rx.Component :
             spacing="0",
         ),
         
-        # blank row
-        rx.divider(height="2rem", border_color="transparent"), 
-        
         # clothing advice
-        rx.text(State.clothing_advice, font_weight="bold", color="#3e8be7",),
+        rx.text(State.clothing_advice, font_weight="bold", color="#3e8be7", padding_top="50px"),
+        
     )
 
 
