@@ -224,9 +224,9 @@ class State(rx.State):
             
             self.city = self.cityname_input
             self.country = data["sys"]["country"]
-            self.temperature = f"{int(data['main']['temp'])}°C"
-            self.humidity = f"{int(data['main']['humidity'])}%"
-            self.speed = f"{int(data['wind']['speed'])}km/h"
+            self.temperature = f"{int(data['main']['temp'])}"
+            self.humidity = f"{int(data['main']['humidity'])}"
+            self.speed = f"{int(data['wind']['speed'])}"
             self.location = f"{self.city.capitalize()}, {self.country}"
             self.clothing_advice = get_clothing_advice(int(data['main']['temp']), data["weather"][0]["main"].lower())
             self.weather_condition = data["weather"][0]["main"].lower()
@@ -242,8 +242,8 @@ class State(rx.State):
              # Assume the timestamp is in local time
             local_tz = datetime.timezone(datetime.timedelta(seconds=data['timezone']))
     
-            self.sunrise_time = datetime.datetime.fromtimestamp(sunrise_timestamp, tz=local_tz).strftime('%I:%M %p')
-            self.sunset_time = datetime.datetime.fromtimestamp(sunset_timestamp, tz=local_tz).strftime('%I:%M %p')
+            self.sunrise_time = datetime.datetime.fromtimestamp(sunrise_timestamp, tz=local_tz).strftime('%H:%M')
+            self.sunset_time = datetime.datetime.fromtimestamp(sunset_timestamp, tz=local_tz).strftime('%H:%M')
             
             # set the type of image based on the weather.
             weather_main = data["weather"][0]["main"].lower()
@@ -368,8 +368,8 @@ def index() -> rx.Component :
                         html_height="100px",
                         html_width="100px",
                         ),
-                        rx.heading(State.location, size="md"),
-                        rx.text(State.weather_condition.upper(), font_weight="bold", opacity="0.8"),
+                        rx.heading(State.weather_condition.upper(), size="lg"),
+                        rx.heading(State.location, size="md", opacity="0.8"),
                         style=css.get("weather_image"),
                     ),
                 width=["35%"],
@@ -382,7 +382,10 @@ def index() -> rx.Component :
                 rx.vstack(
                     rx.hstack(
                         rx.vstack(
-                            rx.heading(State.temperature, color="black", size="xl"),
+                            rx.hstack(
+                                rx.heading(State.temperature, size="xl"),
+                                rx.heading("°C", size="md"),
+                                      ),
                             rx.text(
                                 "TEMPERATURE",
                                 style=css.get("weather_data_text"),
@@ -390,20 +393,26 @@ def index() -> rx.Component :
                                 spacing="0",                       
                             ), 
                         rx.vstack(
-                            rx.heading(State.speed, color="black", size="xl"),
-                            rx.text(
-                                "WIND SPEED",
-                                style=css.get("weather_data_text"),
-                                ),
-                                spacing="0",                     
-                            ),
-                        rx.vstack(
-                            rx.heading(State.humidity, color="black", size="xl"),
+                            rx.hstack(
+                                rx.heading(State.humidity, size="xl"),
+                                rx.heading("%", size="md"),
+                                      ),
                             rx.text(
                                 "HUMIDITY",
                                 style=css.get("weather_data_text"),
                                 ),
                                 spacing="0",                    
+                            ),
+                        rx.vstack(
+                            rx.hstack(
+                                rx.heading(State.speed, size="xl"),
+                                rx.heading("km/h", size="md"),
+                                      ),
+                            rx.text(
+                                "WIND SPEED",
+                                style=css.get("weather_data_text"),
+                                ),
+                                spacing="0",                     
                             ),
                         style=css.get("multiple_stack"),
                         width=["90%"],
@@ -412,43 +421,23 @@ def index() -> rx.Component :
 
                     rx.hstack(
                         rx.vstack(
-                            rx.vstack(
-                                rx.heading(State.max_temp, color="black", size="md"),
-                                rx.text(
-                                    "HIGH",
-                                    style=css.get("weather_data_text"),
-                                    ),
-                                    spacing="0",                       
-                                ),   
-                            rx.vstack(
-                                rx.heading(State.min_temp, color="black", size="md"),
-                                rx.text(
-                                    "LOW",
-                                    style=css.get("weather_data_text"),
-                                    ),
-                                    spacing="0",                          
-                                ), 
-                            ),
+                            rx.heading(State.min_temp + " ~ " + State.max_temp, color="black", size="md"),
+                            rx.text(
+                                "LOW ~ HIGH",
+                                style=css.get("weather_data_text"),
+                                ),
+                                spacing="0",                   
+                            ),   
                         rx.vstack(
-                            rx.vstack(
-                                rx.heading(State.sunrise_time, color="black", size="md"),
-                                rx.text(
-                                    "SUNRISE",
-                                    style=css.get("weather_data_text"),
-                                    ),
-                                    spacing="0",                            
+                            rx.heading(State.sunrise_time + " ~ " + State.sunset_time, color="black", size="md"),
+                            rx.text(
+                                "SUNRISE ~ SUNSET",
+                                style=css.get("weather_data_text"),
                                 ),
-                            rx.vstack(
-                                rx.heading(State.sunset_time, color="black", size="md"),
-                                rx.text(
-                                    "SUNSET",
-                                    style=css.get("weather_data_text"),
-                                    ),
-                                    spacing="0",                             
-                                ),
+                                spacing="0",
                             ), 
                         style=css.get("multiple_stack"),
-                        width=["70%"],
+                        width=["65%"],
                         padding_top="1.5rem",
                         ),
                     width=["100%"],
