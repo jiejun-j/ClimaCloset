@@ -237,8 +237,8 @@ class State(rx.State):
         self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
                      for item in items_list
                      ]
-
-    # Delete the selected item from the database.
+    
+    # Delete the latest item from the database.
     def delete_latest_item(self):
         with rx.session() as session:
             latest_item = session.query(Items).order_by(Items.id.desc()).first()
@@ -246,7 +246,22 @@ class State(rx.State):
                 session.delete(latest_item)
                 session.commit()
         self.fetch_data()
+        
+    # Delete the selected item from the database.
+    delete_item_id: str = ""
     
+    def delete_selected_item(self):
+        with rx.session() as session:
+            item_id = int(self.delete_item_id)
+            item_to_delete = session.query(Items).filter(Items.id == item_id).first()
+            if item_to_delete:
+                session.delete(item_to_delete)
+                session.commit()
+        self.fetch_data()
+        self.delete_item_id = ""
+    
+    def handle_delete_item_id_change(self, value):
+        self.delete_item_id = value
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
 def get_clothing_advice(temperature, weather_condition):
@@ -394,27 +409,67 @@ def wardrobe_page() -> rx.Component:
     
     return rx.vstack(
         wardrobe_header,
-        # input area        
-        rx.form(            
-            rx.vstack(
-                rx.input(placeholder="name", id="name"),
-                rx.input(placeholder="type", id="type"),
-                rx.input(placeholder="description", id="description"),
-                rx.button("Submit", type_="submit"),
-                style=css.get("stack"),
+        rx.box(height="2em"),
+        rx.card(
+            rx.hstack(
+                rx.form(            
+                    rx.vstack(
+                        rx.input(placeholder="name", id="name"),
+                        rx.input(placeholder="type", id="type"),
+                        rx.input(placeholder="description", id="description"),
+                        rx.button("Add Item", type_="submit"),
+                        style=css.get("stack"),
+                    ),
+                    on_submit=State.handle_submit,
+                ),
+                rx.divider(height="5em", border_color="gray", orientation="vertical"),
+                rx.form(
+                    rx.vstack(
+                        rx.input(
+                            placeholder="Enter Item ID to delete",
+                            id="delete_item_id",
+                            on_change=State.handle_delete_item_id_change
+                        ),
+                        rx.button(
+                            "Delete Selected Item",
+                            variant="solid",
+                            on_click=State.delete_selected_item
+                        ),
+                    ),
+                ),
+                rx.divider(height="5em", border_color="gray", orientation="vertical"),
+                rx.form(
+                    rx.spacer(height="1em"),
+                    rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1])),
+                    rx.spacer(height="1em"),
+                    rx.button(
+                        "Delete Latest Item", 
+                        variant="solid",
+                        on_click=State.delete_latest_item,
+                    ),
+                ),
+                width="95%",
+                justify_content="space-between",
             ),
-            on_submit=State.handle_submit,
+            #header=rx.heading("Manage My Wardrobe", size="md"),
+            footer=rx.text(
+                "To view the latest updates in your wardrobe, please restart the application after adding or deleting items. ", 
+                size="sm",
+                color="#3e8be7",
+            ),
+            width="95%",
         ),
-        rx.data_table(
-            data=df,
-            pagination=True,
-            search=True,
-            sort=True
-        ),
-        rx.button(
-            "Delete Latest Item", 
-            variant="solid",
-            on_click=State.delete_latest_item,
+        
+        rx.box(height="2em"),
+        
+        rx.hstack(
+            rx.data_table(
+                data=df,
+                pagination=True,
+                search=True,
+                sort=True
+            ),
+            width="95%",
         ),
     )
 
