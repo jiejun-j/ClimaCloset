@@ -134,6 +134,8 @@ def get_weather_request(city: str):
 DATABASE_URL = "sqlite:///reflex.db"
 engine = create_engine(DATABASE_URL)
 
+clothing_types: list[str] = ["Top", "Bottom", "Dress", "Shoes", "Accessory"]
+
 class Items(SQLModel, table=True):
     id: int = Field(primary_key=True)
     name: str
@@ -236,11 +238,16 @@ class State(rx.State):
         self.all_items = []
         self.data = []
     
+    # selected_type: the type of clothing selected by the user.
+    selected_type: str = ""
+    def set_selected_type(self, value):
+        self.selected_type = value
+        
     def handle_submit(self, form_data:dict):
         with rx.session() as session:
             data = Items(
                 name=form_data.get("name"),
-                type=form_data.get("type"),
+                type=self.selected_type,
                 description=form_data.get("description"),
             )
             session.add(data)
@@ -283,7 +290,7 @@ class State(rx.State):
     def handle_edit_submit(self, form_data: dict):
         item_id = form_data.get("edit_id")
         new_name = form_data.get("edit_name")
-        new_type = form_data.get("edit_type")
+        new_type = self.selected_type
         new_description = form_data.get("edit_description")
 
         with rx.session() as session:
@@ -494,7 +501,12 @@ def wardrobe_page() -> rx.Component:
                 rx.form(            
                     rx.vstack(
                         rx.input(placeholder="Name", id="name"),
-                        rx.input(placeholder="Type", id="type"),
+                        rx.select(
+                            clothing_types,
+                            placeholder="Select Type",
+                            on_change=State.set_selected_type,
+                            value=State.selected_type,
+                        ),
                         rx.input(placeholder="Description", id="description"),
                         rx.button("Add Item", type_="submit"),
                         style=css.get("multiple_stack"),
@@ -506,7 +518,12 @@ def wardrobe_page() -> rx.Component:
                     rx.vstack(
                         rx.input(placeholder="ID", id="edit_id"),
                         rx.input(placeholder="New Name", id="edit_name"),
-                        rx.input(placeholder="New Type", id="edit_type"),
+                        rx.select(
+                            clothing_types,
+                            placeholder="New Select Type",
+                            on_change=State.set_selected_type,
+                            value=State.selected_type,
+                        ),
                         rx.input(placeholder="New Description", id="edit_description"),
                         rx.button("Edit Item", type_="submit"),
                     ),
