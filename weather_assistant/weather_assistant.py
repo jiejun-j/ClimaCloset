@@ -279,6 +279,24 @@ class State(rx.State):
     
     def handle_delete_item_id_change(self, value):
         self.delete_item_id = value
+        
+    def handle_edit_submit(self, form_data: dict):
+        item_id = form_data.get("edit_id")
+        new_name = form_data.get("edit_name")
+        new_type = form_data.get("edit_type")
+        new_description = form_data.get("edit_description")
+
+        with rx.session() as session:
+            # search for the item to edit
+            item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
+            if item_to_edit:
+                # update the item
+                item_to_edit.name = new_name
+                item_to_edit.type = new_type
+                item_to_edit.description = new_description
+                session.commit()
+
+        self.fetch_data()
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
 def get_clothing_advice(temperature, weather_condition):
@@ -472,17 +490,29 @@ def wardrobe_page() -> rx.Component:
         rx.box(height="2rem"),
         rx.card(
             rx.hstack(
+                rx.box(width="1rem"),
                 rx.form(            
                     rx.vstack(
-                        rx.input(placeholder="name", id="name"),
-                        rx.input(placeholder="type", id="type"),
-                        rx.input(placeholder="description", id="description"),
+                        rx.input(placeholder="Name", id="name"),
+                        rx.input(placeholder="Type", id="type"),
+                        rx.input(placeholder="Description", id="description"),
                         rx.button("Add Item", type_="submit"),
-                        #style=css.get("narrow_stack"),
+                        style=css.get("multiple_stack"),
                     ),
                     on_submit=State.handle_submit,
                 ),
-                rx.divider(height="5rem", border_color="gray", orientation="vertical"),
+                rx.divider(height="10rem", orientation="vertical"),
+                rx.form(
+                    rx.vstack(
+                        rx.input(placeholder="ID", id="edit_id"),
+                        rx.input(placeholder="New Name", id="edit_name"),
+                        rx.input(placeholder="New Type", id="edit_type"),
+                        rx.input(placeholder="New Description", id="edit_description"),
+                        rx.button("Edit Item", type_="submit"),
+                    ),
+                    on_submit=State.handle_edit_submit,
+                ),
+                rx.divider(height="10rem", orientation="vertical"),
                 rx.form(
                     rx.vstack(
                         rx.input(
@@ -498,7 +528,7 @@ def wardrobe_page() -> rx.Component:
                         #style=css.get("narrow_stack"),
                     ),
                 ),
-                rx.divider(height="5rem", border_color="gray", orientation="vertical"),
+                rx.divider(height="10rem", orientation="vertical"),
                 rx.form(
                     rx.stack(
                         rx.spacer(height="1rem"),
@@ -514,19 +544,17 @@ def wardrobe_page() -> rx.Component:
                 ),
                 width="95%",
                 justify_content="space-between",
-                #align_items="flex-end",
             ),
             
             footer=rx.text(
                 "To view the latest updates in your wardrobe, please restart the application after adding or deleting items. ", 
                 size="sm",
                 color="#3e8be7",
+                padding_left="4rem",
             ),
-            width="95%",
+            width="85%",
+            padding="1rem",
         ),
-        
-        # blank row
-        rx.divider(height="2rem", border_color="transparent"), 
         
         rx.hstack(
             rx.data_table(
@@ -535,7 +563,8 @@ def wardrobe_page() -> rx.Component:
                 search=True,
                 sort=True
             ),
-            width="95%",
+            width="85%",
+            padding_top="2rem",
         ),
     )
 
