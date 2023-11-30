@@ -5,7 +5,6 @@ import os
 import datetime
 from dotenv import load_dotenv
 from urllib.parse import urlencode
-from typing import List, Dict
 from sqlmodel import SQLModel, Field, create_engine
 
 # CSS Stylesheet
@@ -96,7 +95,7 @@ css: dict = {
         "_dark": {"color": "#000000"},
         "height": "18px",
     },
-}        
+}
 
 # Weather Data: retrieve data from the OpenWeatherMap API.
 # Get the API key from the environment variables.
@@ -238,8 +237,8 @@ class State(rx.State):
     
     # Wardrobe attributes
     # Create a session and query the table to add a new record to the database.
-    all_items: List[Items] = []
-    data: List[Dict] = []
+    all_items: list[Items] = []
+    data: list[dict] = []
     def __init__(self):
         super().__init__()
         self.all_items = []
