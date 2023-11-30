@@ -173,13 +173,13 @@ class State(rx.State):
     def get_input_value(self, cityname_input):
         self.cityname_input = cityname_input
     
-    async def handle_key_press(self, key):
+    def handle_key_press(self, key):
         if key == "Enter" and self.cityname_input != "":
             self.expand_content_height()
-            await self.give_content_bg()
-            await self.get_weather_data()
+            self.give_content_bg()
+            self.get_weather_data()
     
-    async def give_content_bg(self):
+    def give_content_bg(self):
         if self.content_bg != "#fafafa":
             self.content_bg = "#fafafa"
     
@@ -187,7 +187,7 @@ class State(rx.State):
         if self.content_height != "300px":
             self.content_height = "300px"
             
-    async def get_weather_data(self):
+    def get_weather_data(self):
         city_name = self.cityname_input
         response = requests.get(get_weather_request(city_name))
         
