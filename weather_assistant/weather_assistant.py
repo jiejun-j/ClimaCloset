@@ -4,7 +4,6 @@ import requests
 import os
 import datetime
 from dotenv import load_dotenv
-from urllib.parse import urlencode
 from sqlmodel import SQLModel, Field, create_engine
 
 # CSS Stylesheet
@@ -126,14 +125,7 @@ WEATHER_IMAGE_MAP = {
 # API request: construct the URL based on the given city name.
 def get_weather_request(city: str):
     base_url = "https://api.openweathermap.org/data/2.5/weather"
-    query_parameters = {
-        "q": city,
-        "appid": API_KEY,
-        "units": "metric"
-    }
-
-    encoded_parameters = urlencode(query_parameters)
-    full_url = f"{base_url}?{encoded_parameters}"
+    full_url = f"{base_url}?q={city}&appid={API_KEY}&units=metric"
 
     return full_url
 
