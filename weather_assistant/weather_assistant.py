@@ -242,7 +242,14 @@ class State(rx.State):
     selected_type: str = ""
     def set_selected_type(self, value):
         self.selected_type = value
-        
+    
+    # Fetch the data from the database.
+    def fetch_data(self):
+        with rx.session() as session:
+            items_list = session.query(Items).all()
+        self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
+                     for item in items_list]
+    
     def handle_submit(self, form_data:dict):
         with rx.session() as session:
             data = Items(
@@ -253,15 +260,25 @@ class State(rx.State):
             session.add(data)
             session.commit()
         self.fetch_data()
-
-    # Fetch the data from the database.
-    def fetch_data(self):
-        with rx.session() as session:
-            items_list = session.query(Items).all()
-        self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
-                     for item in items_list
-                     ]
     
+    def handle_edit_submit(self, form_data: dict):
+        item_id = form_data.get("edit_id")
+        new_name = form_data.get("edit_name")
+        new_type = self.selected_type
+        new_description = form_data.get("edit_description")
+
+        with rx.session() as session:
+            # search for the item to edit
+            item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
+            if item_to_edit:
+                # update the item
+                item_to_edit.name = new_name
+                item_to_edit.type = new_type
+                item_to_edit.description = new_description
+                session.commit()
+
+        self.fetch_data()
+
     # Delete the latest item from the database.
     def delete_latest_item(self):
         with rx.session() as session:
@@ -287,23 +304,7 @@ class State(rx.State):
     def handle_delete_item_id_change(self, value):
         self.delete_item_id = value
         
-    def handle_edit_submit(self, form_data: dict):
-        item_id = form_data.get("edit_id")
-        new_name = form_data.get("edit_name")
-        new_type = self.selected_type
-        new_description = form_data.get("edit_description")
 
-        with rx.session() as session:
-            # search for the item to edit
-            item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
-            if item_to_edit:
-                # update the item
-                item_to_edit.name = new_name
-                item_to_edit.type = new_type
-                item_to_edit.description = new_description
-                session.commit()
-
-        self.fetch_data()
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
 def get_clothing_advice(temperature, weather_condition):
@@ -492,6 +493,12 @@ def wardrobe_page() -> rx.Component:
     # Convert state.data into a pandas dataframe
     df = pd.DataFrame(state.data)
     
+    # check if the dataframe is empty
+    if "id" in df.columns and not df.empty:
+        latest_item_id_text = "The latest Item ID is " + str(df["id"].iloc[-1])
+    else:
+        latest_item_id_text = "None"
+    
     return rx.vstack(
         wardrobe_header,
         rx.box(height="2rem"),
@@ -549,7 +556,7 @@ def wardrobe_page() -> rx.Component:
                 rx.form(
                     rx.stack(
                         rx.spacer(height="1rem"),
-                        rx.text("The latest Item ID is" + " " + str(df["id"].iloc[-1]), color="gray",),
+                        rx.text(latest_item_id_text, color="gray",),
                         rx.spacer(height="1rem"),
                         rx.button(
                             "Delete Latest Item", 
