@@ -1,9 +1,7 @@
 import reflex as rx
 import pandas as pd
 import requests
-import os
 import datetime
-from dotenv import load_dotenv
 from sqlmodel import SQLModel, Field, create_engine
 
 # CSS Stylesheet
@@ -96,12 +94,6 @@ css: dict = {
     },
 }
 
-# Weather Data: retrieve data from the OpenWeatherMap API.
-# Get the API key from the environment variables.
-load_dotenv()
-API_KEY: str = os.getenv("KEY")
-
-
 # A dictionary mapping different weather conditions to their respective image sources.
 WEATHER_IMAGE_MAP = {
     "thunderstorm": "/thunderstorm.png",
@@ -125,7 +117,7 @@ WEATHER_IMAGE_MAP = {
 # API request: construct the URL based on the given city name.
 def get_weather_request(city: str):
     base_url = "https://api.openweathermap.org/data/2.5/weather"
-    full_url = f"{base_url}?q={city}&appid={API_KEY}&units=metric"
+    full_url = f"{base_url}?q={city}&appid=7c9495e301fb54d62adb32527d93cc87&units=metric"
 
     return full_url
 
@@ -261,7 +253,6 @@ class State(rx.State):
             session.add(data)
             session.commit()
         app = rx.App()
-        app.add_page(wardrobe_page, route="/")
         app.compile()
     
     # Edit an existing item in the database.
@@ -281,7 +272,6 @@ class State(rx.State):
                 item_to_edit.description = new_description
                 session.commit()
         app = rx.App()
-        app.add_page(wardrobe_page, route="/")
         app.compile()
 
     # Delete the latest item from the database.
@@ -292,7 +282,6 @@ class State(rx.State):
                 session.delete(latest_item)
                 session.commit()
         app = rx.App()
-        app.add_page(wardrobe_page, route="/")
         app.compile()
         
     # Delete the selected item from the database.
@@ -307,7 +296,6 @@ class State(rx.State):
                 session.commit()
         self.delete_item_id = ""
         app = rx.App()
-        app.add_page(wardrobe_page, route="/")
         app.compile()
     
     def handle_delete_item_id_change(self, value):
@@ -577,13 +565,6 @@ def wardrobe_page() -> rx.Component:
                 ),
                 width="95%",
                 justify_content="space-between",
-            ),
-            
-            footer=rx.text(
-                "To view the latest updates in your wardrobe, please restart the application after adding or deleting items. ", 
-                size="sm",
-                color="#3e8be7",
-                padding_left="4rem",
             ),
             width="85%",
             padding="1rem",
