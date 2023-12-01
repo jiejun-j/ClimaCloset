@@ -93,10 +93,10 @@ css: dict = {
 }
 
 # Weather API: get the weather data for the given city.
-def get_weather_request(city: str):
-    base_url = "https://api.openweathermap.org/data/2.5/weather"
-    full_url = f"{base_url}?q={city}&appid=7c9495e301fb54d62adb32527d93cc87&units=metric"
-    return full_url
+def get_weather_request(city: str): #定义了一个名为 get_weather_request 的函数，它接受一个参数 city，这是一个字符串（str 类型）。这个函数的目的是构建一个用于获取特定城市天气数据的API请求URL。
+    base_url = "https://api.openweathermap.org/data/2.5/weather" #创建了一个名为 base_url 的变量，存储的值是一个URL字符串。这个URL是OpenWeatherMap API的基础地址，用于获取天气数据。
+    full_url = f"{base_url}?q={city}&appid=7c9495e301fb54d62adb32527d93cc87&units=metric" #使用了Python的格式化字符串（以f开头）。它创建了一个名为 full_url 的变量，这个变量结合了基础URL、城市名称、API密钥和温度单位。这里的 {city} 会被传递给函数的 city 参数的值所替换，{key}是API密钥，&units=metric 指定了温度单位为摄氏度。
+    return full_url #返回了构建好的完整URL。这个URL用于向OpenWeatherMap API发送请求，以获取传入城市的天气数据。
 
 # Weather images: map the weather condition to the corresponding image.
 WEATHER_IMAGE_MAP = {
@@ -119,21 +119,21 @@ WEATHER_IMAGE_MAP = {
 
 
 # Database: create a database to store the wardrobe items.
-DATABASE_URL = "sqlite:///reflex.db"
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = "sqlite:///reflex.db" #定义了一个名为 DATABASE_URL 的变量，其值是一个数据库连接字符串。这里使用的是SQLite数据库，数据库文件名为 reflex.db。
+engine = create_engine(DATABASE_URL) #使用 SQLAlchemy 的 create_engine 函数来创建一个连接到指定数据库的引擎。这个引擎将用于后续的数据库操作。
 
 # Items table: define the table schema
-class Items(SQLModel, table=True):
-    id: int = Field(primary_key=True)
-    name: str
-    type: str
-    description: str
+class Items(SQLModel, table=True): #定义了一个名为 Items 的类，继承自 SQLModel。这个类用于映射数据库中的一个表格，用来存储衣橱中的物品。table=True 指示 SQLModel 这个类代表一个数据库表。
+    id: int = Field(primary_key=True) #定义了一个名为 id 的整数字段，作为表的主键。
+    name: str #定义了一个名为 name 的字符串字段，用于存储物品的名称。
+    type: str #定义了一个名为 type 的字符串字段，用于存储物品的类型。
+    description: str #定义了一个名为 description 的字符串字段，用于存储物品的描述。
 
 # Create the table in the database.
-SQLModel.metadata.create_all(engine)
+SQLModel.metadata.create_all(engine) #使用创建的数据库引擎 engine 来创建 Items 类所定义的表。
 
 # Clothing types: the types of clothing that can be added to the wardrobe.
-clothing_types: list[str] = ["Top", "Bottom", "Dress", "Shoes", "Accessory"]
+clothing_types: list[str] = ["Top", "Bottom", "Dress", "Shoes", "Accessory"] #定义了一个名为 clothing_types 的列表，包含可以添加到衣橱中的不同类型的服装。
 
 
 # The state defines all the variables in an app that can change, as well as the functions that change them.
