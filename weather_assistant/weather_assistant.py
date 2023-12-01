@@ -166,17 +166,14 @@ class State(rx.State):
     
     def handle_key_press(self, key):
         if key == "Enter" and self.cityname_input != "":
-            self.expand_content_height()
-            self.give_content_bg()
+            self.update_content_style()
             self.get_weather_data()
     
-    def give_content_bg(self):
-        if self.content_bg != "#fafafa":
-            self.content_bg = "#fafafa"
-    
-    def expand_content_height(self):
+    def update_content_style(self):
         if self.content_height != "300px":
             self.content_height = "300px"
+        if self.content_bg != "#fafafa":
+            self.content_bg = "#fafafa"
             
     def get_weather_data(self):
         city_name = self.cityname_input
