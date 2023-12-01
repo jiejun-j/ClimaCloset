@@ -250,6 +250,7 @@ class State(rx.State):
         self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
                      for item in items_list]
     
+    # Add a new item to the database.
     def handle_submit(self, form_data:dict):
         with rx.session() as session:
             data = Items(
@@ -259,8 +260,11 @@ class State(rx.State):
             )
             session.add(data)
             session.commit()
-        self.fetch_data()
+        app = rx.App()
+        app.add_page(wardrobe_page, route="/")
+        app.compile()
     
+    # Edit an existing item in the database.
     def handle_edit_submit(self, form_data: dict):
         item_id = form_data.get("edit_id")
         new_name = form_data.get("edit_name")
@@ -276,8 +280,9 @@ class State(rx.State):
                 item_to_edit.type = new_type
                 item_to_edit.description = new_description
                 session.commit()
-
-        self.fetch_data()
+        app = rx.App()
+        app.add_page(wardrobe_page, route="/")
+        app.compile()
 
     # Delete the latest item from the database.
     def delete_latest_item(self):
@@ -286,7 +291,9 @@ class State(rx.State):
             if latest_item:
                 session.delete(latest_item)
                 session.commit()
-        self.fetch_data()
+        app = rx.App()
+        app.add_page(wardrobe_page, route="/")
+        app.compile()
         
     # Delete the selected item from the database.
     delete_item_id: str = ""
@@ -298,8 +305,10 @@ class State(rx.State):
             if item_to_delete:
                 session.delete(item_to_delete)
                 session.commit()
-        self.fetch_data()
         self.delete_item_id = ""
+        app = rx.App()
+        app.add_page(wardrobe_page, route="/")
+        app.compile()
     
     def handle_delete_item_id_change(self, value):
         self.delete_item_id = value
