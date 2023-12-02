@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import datetime
 from sqlmodel import SQLModel, Field, create_engine
+from typing import Optional
 
 # CSS Stylesheet
 css: dict = {
@@ -127,7 +128,7 @@ class Items(SQLModel, table=True):
     id: int = Field(primary_key=True)
     name: str
     type: str
-    description: str
+    description: Optional[str] = ""
 
 # Create the table in the database.
 SQLModel.metadata.create_all(engine)
@@ -228,8 +229,13 @@ class State(rx.State):
     
     # selected_type: the type of clothing selected by the user.
     selected_type: str = ""
+    reselected_type: str = ""
+    
     def set_selected_type(self, value):
         self.selected_type = value
+        
+    def set_reselected_type(self, value):
+        self.reselected_type = value
     
     # Fetch the data from the database.
     def fetch_data(self):
@@ -255,8 +261,8 @@ class State(rx.State):
     def handle_edit_submit(self, form_data: dict):
         item_id = form_data.get("edit_id")
         new_name = form_data.get("edit_name")
-        new_type = self.selected_type
-        new_description = form_data.get("edit_description")
+        new_type = self.reselected_type
+        new_description = form_data.get("edit_description") if form_data.get("edit_description") is not None else ''
 
         with rx.session() as session:
             # search for the item to edit
@@ -490,7 +496,7 @@ def wardrobe_page() -> rx.Component:
     if "id" in df.columns and not df.empty:
         latest_item_id_text = "The latest Item ID is " + str(df["id"].iloc[-1])
     else:
-        latest_item_id_text = "None"
+        latest_item_id_text = "There are no items"
     
     return rx.vstack(
         wardrobe_header,
@@ -521,8 +527,8 @@ def wardrobe_page() -> rx.Component:
                         rx.select(
                             clothing_types,
                             placeholder="New Select Type",
-                            on_change=State.set_selected_type,
-                            value=State.selected_type,
+                            on_change=State.set_reselected_type,
+	                        value=State.reselected_type,
                         ),
                         rx.input(placeholder="New Description", id="edit_description"),
                         rx.button("Edit Item", type_="submit"),
