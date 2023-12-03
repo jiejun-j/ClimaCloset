@@ -103,11 +103,11 @@ WEATHER_IMAGE_MAP = {
 }
 
 
-# Database: create a database to store the wardrobe items.
+# Wardorbe Database: create a database to store the wardrobe items.
 DATABASE_URL = "sqlite:///reflex.db"
 engine = create_engine(DATABASE_URL)
 
-# Items table: define the table schema
+# Items table: define the table schema.
 class Items(SQLModel, table=True):
     id: int = Field(primary_key=True)
     name: str
@@ -121,97 +121,111 @@ SQLModel.metadata.create_all(engine)
 clothing_types: list[str] = ["Top", "Bottom", "Dress", "Shoes", "Accessory"]
 
 
-# The state defines all the variables in an app that can change, as well as the functions that change them.
+# The State class defines all the variables that can change, as well as the event handlers that change them.
 class State(rx.State):
     # Weather attributes
+    weather_condition: str = ""
+    image_src: str = ""
     location: str = ""
     city: str = ""
     country: str = ""
     temperature: str = ""
     speed: str = ""
     humidity: str = ""
-    weather_condition: str = ""
-    image_src: str = ""
     max_temp: str = ""
     min_temp: str = ""
     sunrise_time: str = ""
     sunset_time: str = ""
     
-    # Page content attributes
+    # Input attributes
     cityname_input: str = ""
-    clothing_advice: str = ""
     weather_error_message: str = ""
     
-    # Styling attributes
-    content_height: str = "0px"
-    content_bg: str = ""
-        
+    # Get the city name entered by the user.
     def get_input_value(self, cityname_input):
         self.cityname_input = cityname_input
     
+    # When the user presses the Enter key, update the content style and get the weather data.
     def handle_key_press(self, key):
         if key == "Enter" and self.cityname_input != "":
             self.update_content_style()
             self.get_weather_data()
     
+    # Display the content area.
+    content_height: str = "0px"
+    content_bg: str = ""
     def update_content_style(self):
         if self.content_height != "300px":
             self.content_height = "300px"
         if self.content_bg != "#fafafa":
             self.content_bg = "#fafafa"
-            
+    
+    # Get the weather data for the given city.
     def get_weather_data(self):
         city_name = self.cityname_input
-        response = requests.get(get_weather_request(city_name))
+        response = requests.get(get_weather_request(city_name)) # get the weather data from the API
         
         # If the city name is found, display the weather data.
         if response.status_code == 200:
             data = response.json()
             
+            # set the image source based on the weather condition
+            weather_main = data["weather"][0]["main"].lower()
+            self.image_src = WEATHER_IMAGE_MAP.get(weather_main, "/sunny.png")
+            
+            # set the weather data
             self.city = self.cityname_input
             self.country = data["sys"]["country"]
             self.temperature = f"{int(data['main']['temp'])}"
             self.humidity = f"{int(data['main']['humidity'])}"
             self.speed = f"{int(data['wind']['speed'])}"
             self.location = f"{self.city.capitalize()}, {self.country}"
-            self.clothing_advice = get_clothing_advice(int(data['main']['temp']), data["weather"][0]["main"].lower())
             self.weather_condition = data["weather"][0]["main"].lower()
             self.weather_error_message = ""
             
             self.max_temp = f"{int(data['main']['temp_max'])}°C"
             self.min_temp = f"{int(data['main']['temp_min'])}°C"
             
-            # Convert sunrise and sunset times to human-readable format
             sunrise_timestamp = int(data['sys']['sunrise'])
             sunset_timestamp = int(data['sys']['sunset'])
             
-             # Assume the timestamp is in local time
+            # Assume the timestamp is in local time
             local_tz = datetime.timezone(datetime.timedelta(seconds=data['timezone']))
-    
+
+            # Convert the timestamp to a datetime object and format it
             self.sunrise_time = datetime.datetime.fromtimestamp(sunrise_timestamp, tz=local_tz).strftime('%H:%M')
             self.sunset_time = datetime.datetime.fromtimestamp(sunset_timestamp, tz=local_tz).strftime('%H:%M')
             
-            # set the type of image based on the weather.
-            weather_main = data["weather"][0]["main"].lower()
-            self.image_src = WEATHER_IMAGE_MAP.get(weather_main, "/sunny.png")
+            # Clear the input field
             self.cityname_input = ""
+            
+            # Set the clothing advice
+            self.set_clothing_advice()
         
         # If the city name is not found, display an error message.
         elif response.status_code != 200:
             self.weather_error_message = "City not found. Please enter a valid city name."
             self.cityname_input = ""
 
+    # Clothing advice attributes
+    clothing_advice: str = ""
+    
+    # Set the clothing advice based on the temperature and weather condition.
+    def set_clothing_advice(self):
+        temp = int(self.temperature)
+        condition = self.weather_condition.lower()
+        self.clothing_advice = get_clothing_advice(temp, condition)
+    
     
     # Wardrobe attributes
-    # Create a session and query the table to add a new record to the database.
-    all_items: list[Items] = []
-    data: list[dict] = []
+    all_items: list[Items] = [] 
+    data: list[dict] = [] 
     def __init__(self):
         super().__init__()
         self.all_items = []
         self.data = []
     
-    # selected_type: the type of clothing selected by the user.
+    # Set the selected type and reselected type
     selected_type: str = ""
     reselected_type: str = ""
     
@@ -229,7 +243,7 @@ class State(rx.State):
                      for item in items_list]
     
     # Add a new item to the database.
-    def handle_submit(self, form_data:dict):
+    def handle_add_submit(self, form_data:dict):
         with rx.session() as session:
             data = Items(
                 name=form_data.get("name"),
@@ -247,7 +261,6 @@ class State(rx.State):
         new_name = form_data.get("edit_name")
         new_type = self.reselected_type
         new_description = form_data.get("edit_description") if form_data.get("edit_description") is not None else ''
-
         with rx.session() as session:
             # search for the item to edit
             item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
@@ -272,7 +285,6 @@ class State(rx.State):
         
     # Delete the selected item from the database.
     delete_item_id: str = ""
-    
     def delete_selected_item(self):
         with rx.session() as session:
             item_id = int(self.delete_item_id)
@@ -313,8 +325,8 @@ state = State()
 # Header style: including the title and the breadcrumb navigation
 # Pass the title as a parameter to the Header class.
 class Header(rx.Hstack):
-    def __init__(self, title_text=""):
-        super().__init__(style=css.get("header_container"))
+    def __init__(self, title_text=""): # default title is empty
+        super().__init__(style=css.get("header_container")) 
 
         self.title = rx.text(
             title_text,
@@ -336,7 +348,8 @@ class Header(rx.Hstack):
 # Weather page: users can check the weather and receive clothing advice.
 @rx.page(title='Weather Assistant')
 def index() -> rx.Component :
- 
+    
+    # Create the header
     weather_header: rx.Hstack = Header("Weather Assistant")
     
     return rx.vstack(
@@ -359,8 +372,8 @@ def index() -> rx.Component :
             style=css.get("single_stack"),
         ), 
     
-        # blank row
-        rx.divider(height="2rem", border_color="transparent"),
+        # add a space between the input area and the weather data
+        rx.box(height="3rem"),
         
         # weather data
         rx.hstack(
@@ -384,6 +397,7 @@ def index() -> rx.Component :
             # weather details
             rx.container(
                 rx.vstack(
+                    # temperature, humidity, wind speed
                     rx.hstack(
                         rx.vstack(
                             rx.hstack(
@@ -414,7 +428,7 @@ def index() -> rx.Component :
                         width=["90%"],
                         padding_bottom="1.5rem",
                         ),
-
+                    # min temp, max temp, sunrise time, sunset time
                     rx.hstack(
                         rx.vstack(
                             rx.heading(
@@ -456,15 +470,17 @@ def index() -> rx.Component :
 # Wardrobe page: users can manage items in their wardrobe.
 @rx.page(title='My Wardrobe', route="/wardrobe")
 def wardrobe_page() -> rx.Component:
-        
+    
+    # Create the header
     wardrobe_header: rx.Hstack = Header("My Wardrobe")
 
     # Use the state instance to call fetch_data
     state.fetch_data()
+    
     # Convert state.data into a pandas dataframe
     df = pd.DataFrame(state.data)
     
-    # check if the dataframe is empty
+    # Check if the dataframe is empty, and if it is, display a message.
     if "id" in df.columns and not df.empty:
         latest_item_id_text = "The latest Item ID is " + str(df["id"].iloc[-1])
     else:
@@ -473,10 +489,14 @@ def wardrobe_page() -> rx.Component:
     return rx.vstack(
         wardrobe_header,
         rx.box(height="2rem"),
+        
+        # Manage wardrobe area
         rx.card(
             rx.hstack(
                 rx.box(width="1rem"),
-                rx.form(            
+                
+                # Add item
+                rx.form(           
                     rx.vstack(
                         rx.input(placeholder="Name", id="name"),
                         rx.select(
@@ -489,9 +509,11 @@ def wardrobe_page() -> rx.Component:
                         rx.button("Add Item", type_="submit"),
                         style=css.get("multiple_stack"),
                     ),
-                    on_submit=State.handle_submit,
+                    on_submit=State.handle_add_submit,
                 ),
                 rx.divider(height="10rem", orientation="vertical"),
+                
+                # Edit item
                 rx.form(
                     rx.vstack(
                         rx.input(placeholder="ID", id="edit_id"),
@@ -508,6 +530,8 @@ def wardrobe_page() -> rx.Component:
                     on_submit=State.handle_edit_submit,
                 ),
                 rx.divider(height="10rem", orientation="vertical"),
+                
+                # Delete selected item
                 rx.form(
                     rx.vstack(
                         rx.input(
@@ -524,6 +548,8 @@ def wardrobe_page() -> rx.Component:
                     ),
                 ),
                 rx.divider(height="10rem", orientation="vertical"),
+                
+                # Delete latest item
                 rx.form(
                     rx.stack(
                         rx.spacer(height="1rem"),
@@ -544,6 +570,7 @@ def wardrobe_page() -> rx.Component:
             padding="2rem",
         ),
         
+        # Display the wardrobe items in a data table
         rx.hstack(
             rx.data_table(
                 data=df,
@@ -558,7 +585,7 @@ def wardrobe_page() -> rx.Component:
 
 
 # Initialize and configure the application
-app = rx.App()              # Initialize the main app with the defined styles.
-app.add_page(index)                             # Add the main page to the app.
-app.add_page(wardrobe_page, route="/wardrobe")  # Add the wardrobe page to the app.
-app.compile()                                   # Compile the app
+app = rx.App()
+app.add_page(index)
+app.add_page(wardrobe_page, route="/wardrobe")
+app.compile()                                   
