@@ -463,7 +463,6 @@ def index() -> rx.Component :
         
         # clothing advice
         rx.text(State.clothing_advice, font_weight="bold", color="#3e8be7", padding_top="50px"),
-        
     )
 
 
@@ -588,4 +587,4 @@ def wardrobe_page() -> rx.Component:
 app = rx.App()
 app.add_page(index)
 app.add_page(wardrobe_page, route="/wardrobe")
-app.compile()                                   
+app.compile()
