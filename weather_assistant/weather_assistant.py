@@ -7,7 +7,6 @@ from typing import Optional
 
 # CSS Stylesheet
 css: dict = {
-    "app": {"_dark": {"bg": "#1f2028"}},
     "header": {
         "width":"100%",
         "height":"60px",
@@ -19,8 +18,6 @@ css: dict = {
             "0 4rem",
             "0 10rem",
         ],
-        "_dark": {"bg":"#141518"},
-        "_light": {"bg":"#ffffff"},
         "transition": "all 300ms ease",
         "justify-content": "center",
     },
@@ -73,22 +70,18 @@ css: dict = {
         "font_size": "12px",
         "font_weight": "bold",
         "opacity": "0.6",
-        "_dark": {"color": "#000000"},
     },
     "weather_data_big_numbers":{
         "font_size": "45px",
         "font_weight": "bold",
-        "_dark": {"color": "#000000"},
     },
     "weather_data_small_numbers":{
         "font_size": "24px",
         "font_weight": "bold",
-        "_dark": {"color": "#000000"},
     },
     "weather_data_measurement":{
         "font_size": "24px",
         "font_weight": "bold",
-        "_dark": {"color": "#000000"},
         "height": "18px",
     },
 }
@@ -326,7 +319,7 @@ def get_clothing_advice(temperature, weather_condition):
 state = State()
 
 
-# Header style: including the title, the breadcrumb navigation, and the dark/light mode toggle button.
+# Header style: including the title and the breadcrumb navigation
 # Pass the title as a parameter to the Header class.
 class Header(rx.Hstack):
     def __init__(self, title_text="Home"):
@@ -350,15 +343,7 @@ class Header(rx.Hstack):
             ),
         )
         
-        self.toggle = rx.color_mode_button(
-            rx.color_mode_icon(),
-            color_scheme="gray",
-            _dark={"color": "white"},
-            _light={"color": "black"},
-            style={"margin-left": "40px"},
-        )
-        
-        self.children = [self.title, self.breadcrumbs, self.toggle]
+        self.children = [self.title, self.breadcrumbs]
 
 
 # Weather page: users can check the weather and receive clothing advice.
@@ -568,8 +553,8 @@ def wardrobe_page() -> rx.Component:
                 width="95%",
                 justify_content="space-between",
             ),
-            width="85%",
-            padding="1rem",
+            width="80%",
+            padding="2rem",
         ),
         
         rx.hstack(
@@ -580,13 +565,13 @@ def wardrobe_page() -> rx.Component:
                 sort=True
             ),
             width="85%",
-            padding_top="2rem",
+            padding="2rem",
         ),
     )
 
 
 # Initialize and configure the application
-app = rx.App(style=css.get("app"))              # Initialize the main app with the defined styles.
+app = rx.App()              # Initialize the main app with the defined styles.
 app.add_page(index)                             # Add the main page to the app.
 app.add_page(wardrobe_page, route="/wardrobe")  # Add the wardrobe page to the app.
 app.compile()                                   # Compile the app
