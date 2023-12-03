@@ -18,7 +18,6 @@ css: dict = {
             "0 4rem",
             "0 10rem",
         ],
-        "transition": "all 300ms ease",
         "justify-content": "center",
     },
     "input":{
@@ -26,7 +25,6 @@ css: dict = {
         "height": "70px",
         "text_align": "center",
         "font size": "32px",
-        "transition": "all 300ms ease",
     },
     "errormessage":{
         "width": "55%",
@@ -34,7 +32,6 @@ css: dict = {
         "color": "#3e8be7",
         "text_align": "center",
         "font size": "32px",
-        "transition": "all 300ms ease",
     },
     "single_stack":{
         "width": "100%",
@@ -50,7 +47,6 @@ css: dict = {
     },
     "content":{
         "width": "55%",
-        "transition": "all 300ms ease",
         "border_radius": "10px",
         "justify_content": "center",
         "display": "flex",
