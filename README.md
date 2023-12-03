@@ -15,15 +15,16 @@
 
 3. **Install the required libraries:**
     ```bash
-    pip install reflex requests asyncio python-dotenv
+    pip install reflex requests python-dotenv
+    ```
+    
+4. **Initialize the application and database:**
+    ```bash
+    reflex init
+    reflex db init
     ```
 
-4. **Setup Environment Variables:**
-    - Get API key from: https://openweathermap.org/api
-    - Create a `.env` file in the root directory.
-    - Add the API key as `KEY=YOUR_OPENWEATHERMAP_API_KEY`.
-    
-6. **Preview the application locally:**
+5. **Preview the application locally:**
     ```bash
     reflex run
     ```
