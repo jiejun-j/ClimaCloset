@@ -148,7 +148,6 @@ class State(rx.State):
     # When the user presses the Enter key, update the content style and get the weather data.
     def handle_key_press(self, key):
         if key == "Enter" and self.cityname_input != "":
-            self.update_content_style()
             self.get_weather_data()
     
     # Display the content area.
@@ -163,11 +162,16 @@ class State(rx.State):
     # Get the weather data for the given city.
     def get_weather_data(self):
         city_name = self.cityname_input
-        response = requests.get(get_weather_request(city_name)) # get the weather data from the API
+        
+        # get the weather data from the API
+        response = requests.get(get_weather_request(city_name))
         
         # If the city name is found, display the weather data.
         if response.status_code == 200:
             data = response.json()
+            
+            # display the content area
+            self.update_content_style()
             
             # set the image source based on the weather condition
             weather_main = data["weather"][0]["main"].lower()
