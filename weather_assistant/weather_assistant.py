@@ -7,18 +7,17 @@ from typing import Optional
 
 # CSS Stylesheet
 css: dict = {
-    "header": {
+    "header_container": {
         "width":"100%",
         "height":"60px",
-        "box_shadow":"0px 8px 16px 0px rgba(0,0,0,0.25)",
-        "padding": [
-            "0 1rem",
-            "0 1rem",
-            "0 1rem",
-            "0 4rem",
-            "0 10rem",
-        ],
-        "justify-content": "center",
+        "box_shadow":"0px 8px 16px 0px rgba(0,0,0,0.1)",
+        "padding": "0 10rem", 
+        "justify-content": "space-between",
+    },
+    "header_title": {
+        "font_size":"24px",
+        "font_weight":"bold",
+        "color":"#3e8be7",
     },
     "input":{
         "width": "55%",
@@ -29,36 +28,31 @@ css: dict = {
     "errormessage":{
         "width": "55%",
         "height": "70px",
-        "color": "#3e8be7",
         "text_align": "center",
         "font size": "32px",
+        "color": "#3e8be7",
     },
     "single_stack":{
         "width": "100%",
         "align_items": "center",
         "justify_content": "center",
-        "display": "flex",
         "padding_top": "4rem",
     },
     "multiple_stack":{
         "align_items": "center",
         "justify_content": "space-between",
-        "display": "flex",
     },
     "content":{
         "width": "55%",
         "border_radius": "10px",
         "justify_content": "center",
-        "display": "flex",
         "overflow": "hidden",
-        "box_shadow": "0px 10px 20px 0px rgba(0,0,0,0.5)",
+        "box_shadow": "0px 10px 20px 0px rgba(0,0,0,0.15)",
     },
     "weather_image":{
         "color": "white",
-        "spacing": "0",
         "width": "100%",
         "height": "inherit",
-        "display": "flex",
         "align_items": "center",
         "justify_content": "center",
     },
@@ -81,6 +75,7 @@ css: dict = {
         "height": "18px",
     },
 }
+
 
 # Weather API: get the weather data for the given city.
 def get_weather_request(city: str):
@@ -293,7 +288,6 @@ class State(rx.State):
         self.delete_item_id = value
         
 
-
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
 def get_clothing_advice(temperature, weather_condition):
     if temperature > 30:
@@ -310,7 +304,8 @@ def get_clothing_advice(temperature, weather_condition):
         if "snow" in weather_condition:
             return "Brrr! Snowball fight anyone? Bundle up with a thick coat, gloves, and a hat!"
         return "Freezing cold! Time to rock that winter coat and maybe a scarf and gloves!"
-    
+
+
 # Instantiate the State class
 state = State()
 
@@ -318,16 +313,12 @@ state = State()
 # Header style: including the title and the breadcrumb navigation
 # Pass the title as a parameter to the Header class.
 class Header(rx.Hstack):
-    def __init__(self, title_text="Home"):
-        super().__init__(style=css.get("header"))
+    def __init__(self, title_text=""):
+        super().__init__(style=css.get("header_container"))
 
         self.title = rx.text(
             title_text,
-            font_size="24px",
-            background_image="linear-gradient(130deg, #3e8be7 40%, #87cefa 80%)",
-            background_clip="text",
-            font_weight="bold",
-            style={"flex": 1, "margin-right": "20px"},
+            style=css.get("header_title"),
         )
               
         self.breadcrumbs = rx.breadcrumb(
