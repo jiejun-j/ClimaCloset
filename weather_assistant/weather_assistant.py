@@ -2,7 +2,7 @@ import reflex as rx
 import pandas as pd
 import requests
 import datetime
-from sqlmodel import SQLModel, Field, create_engine
+from sqlmodel import SQLModel, Field, create_engine, select
 from typing import Optional
 
 # CSS Stylesheet
@@ -112,6 +112,8 @@ class Items(SQLModel, table=True):
     id: int = Field(primary_key=True)
     type: str
     name: str
+    suitable_temperature: str
+    is_waterproof: str
     description: Optional[str] = ""
 
 # Create the table in the database.
@@ -120,6 +122,20 @@ SQLModel.metadata.create_all(engine)
 # Clothing types: the types of clothing that can be added to the wardrobe.
 clothing_types: list[str] = ["Top", "Bottom", "Dress", "Shoes", "Accessory"]
 
+# Temperature types:
+temperature_types: list[str] = ["Hot", "Warm", "Cool", "Cold", "Freeze"]
+
+def get_temperature_type(temperature: int):
+    if temperature > 30:
+        return "Hot"
+    elif 20 < temperature <= 30:
+        return "Warm"
+    elif 10 < temperature <= 20:
+        return "Cool"
+    elif 0 < temperature <= 10:
+        return "Cold"
+    else:
+        return "Freeze"
 
 # The State class defines all the variables that can change, as well as the event handlers that change them.
 class State(rx.State):
@@ -218,7 +234,18 @@ class State(rx.State):
     def set_clothing_advice(self):
         temp = int(self.temperature)
         condition = self.weather_condition.lower()
-        self.clothing_advice = get_clothing_advice(temp, condition)
+        temperature_situation = get_temperature_type(temp)
+        is_wet_condition = "True" if "rain" in condition or "snow" in condition else "False"
+        
+        recommendations = self.fetch_recommendations(temperature_situation, is_wet_condition)
+        
+        if len(recommendations) > 0:
+            self.clothing_advice = "You can wear "
+            self.clothing_advice += ', '.join([recommendation["name"] for recommendation in recommendations])
+            self.clothing_advice += " today."
+        else:
+            self.clothing_advice = "We didn't find any suitable clothing in your wardrobe. Here is a general advice: \n"
+            self.clothing_advice += get_default_clothing_advice(temp, condition)
     
     
     # Wardrobe attributes
@@ -231,19 +258,57 @@ class State(rx.State):
     
     # Set the selected type and reselected type
     selected_type: str = ""
+    selected_is_waterproof: str = ""
+    selected_suitable_temperature: str = ""
     reselected_type: str = ""
+    reselected_is_waterproof: str = ""
+    reselected_suitable_temperature: str = ""
     
     def set_selected_type(self, value):
         self.selected_type = value
         
     def set_reselected_type(self, value):
         self.reselected_type = value
+        
+    def set_selected_is_waterproof(self, value):
+        self.selected_is_waterproof = value
+        
+    def set_reselected_is_waterproof(self, value):
+        self.reselected_is_waterproof = value
+        
+    def set_selected_suitable_temperature(self, value):
+        self.selected_suitable_temperature = value
+        
+    def set_reselected_suitable_temperature(self, value):
+        self.reselected_suitable_temperature = value
+        
+    # Fetch the data from the database with conditions.
+    def fetch_recommendations(self, suitable_temperature, is_waterproof):
+        with rx.session() as session:
+            statement = select(Items) \
+                .where(Items.suitable_temperature == suitable_temperature) \
+                .where(Items.is_waterproof == is_waterproof)
+            recommendations = session.exec(statement)
+            return [{"id": item.id, 
+                      "name": item.name, 
+                      "type": item.type, 
+                      "suitable_temperature": item.suitable_temperature,
+                      "is_waterproof": item.is_waterproof,
+                      "description": item.description
+                      }
+                     for item in recommendations]
     
     # Fetch the data from the database.
     def fetch_data(self):
         with rx.session() as session:
             items_list = session.query(Items).all()
-        self.data = [{"id": item.id, "type": item.type, "name": item.name, "description": item.description}
+        self.data = [{"id": item.id, 
+                      "name": item.name, 
+                      "type": item.type, 
+                      "suitable_temperature": item.suitable_temperature,
+                      "is_waterproof": item.is_waterproof,
+                      "description": item.description
+                      }
                      for item in items_list]
     
     # Add a new item to the database.
@@ -252,6 +317,8 @@ class State(rx.State):
             data = Items(
                 type=self.selected_type,
                 name=form_data.get("name"),
+                suitable_temperature=self.selected_suitable_temperature,
+                is_waterproof=self.selected_is_waterproof,
                 description=form_data.get("description"),
             )
             session.add(data)
@@ -264,6 +331,8 @@ class State(rx.State):
         item_id = form_data.get("edit_id")
         new_type = self.reselected_type
         new_name = form_data.get("edit_name")
+        new_suitable_temperature = self.reselected_suitable_temperature
+        new_is_waterproof = self.reselected_is_waterproof
         new_description = form_data.get("edit_description") if form_data.get("edit_description") is not None else ''
         with rx.session() as session:
             # search for the item to edit
@@ -272,6 +341,8 @@ class State(rx.State):
                 # update the item
                 item_to_edit.type = new_type
                 item_to_edit.name = new_name
+                item_to_edit.suitable_temperature = new_suitable_temperature
+                item_to_edit.is_waterproof = new_is_waterproof
                 item_to_edit.description = new_description
                 session.commit()
         app = rx.App()
@@ -305,7 +376,7 @@ class State(rx.State):
         
 
 # Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
-def get_clothing_advice(temperature, weather_condition):
+def get_default_clothing_advice(temperature, weather_condition):
     if temperature > 30:
         return "Whoa, it's sizzling out there! Time for shorts and a tank top!"
     elif 20 < temperature <= 30:
@@ -509,6 +580,18 @@ def wardrobe_page() -> rx.Component:
                         ),
                         rx.input(placeholder="Name (e.g., Jeans)", id="name"),
                         rx.input(placeholder="Description (Optional)", id="description"),
+                        rx.select(
+                            temperature_types,
+                            placeholder="Select suitable temperature",
+                            on_change=State.set_selected_suitable_temperature,
+                            value=State.selected_suitable_temperature,
+                        ),
+                        rx.select(
+                            ["True", "False"],
+                            placeholder="Is your clothes waterproof?",
+                            on_change=State.set_selected_is_waterproof,
+                            value=State.selected_is_waterproof,
+                        ),
                         rx.button("Add Item", type_="submit"),
                         style=css.get("multiple_stack"),
                     ),
@@ -527,6 +610,18 @@ def wardrobe_page() -> rx.Component:
 	                        value=State.reselected_type,
                         ),
                         rx.input(placeholder="New Name", id="edit_name"),
+                        rx.select(
+                            temperature_types,
+                            placeholder="New Select suitable temperature",
+                            on_change=State.set_reselected_suitable_temperature,
+                            value=State.reselected_suitable_temperature,
+                        ),
+                        rx.select(
+                            ["True", "False"],
+                            placeholder="New Is your clothes waterproof?",
+                            on_change=State.set_reselected_is_waterproof,
+                            value=State.reselected_is_waterproof,
+                        ),
                         rx.input(placeholder="New Description", id="edit_description"),
                         rx.button("Edit Item", type_="submit"),
                     ),

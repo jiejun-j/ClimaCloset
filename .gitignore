@@ -1,5 +1,10 @@
+*.__pycache__/
 *.db
+*.env
 *.py[cod]
 .web
-*.__pycache__/
-*.env
+__pycache__/
+
+.venv/
+
+.DS_Store/
