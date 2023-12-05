@@ -3,7 +3,6 @@ import pandas as pd
 import requests
 import datetime
 from sqlmodel import SQLModel, Field, create_engine, select
-from typing import Optional
 
 # CSS Stylesheet
 css: dict = {
@@ -114,7 +113,6 @@ class Items(SQLModel, table=True):
     name: str
     suitable_temperature: str
     is_waterproof: str
-    description: Optional[str] = ""
 
 # Create the table in the database.
 SQLModel.metadata.create_all(engine)
@@ -136,6 +134,24 @@ def get_temperature_type(temperature: int):
         return "Cold"
     else:
         return "Freeze"
+
+# Default clothing advice: Provides clothing advice based on the given temperature and weather condition.
+def get_default_clothing_advice(temperature, weather_condition):
+    if temperature > 30:
+        return "Whoa, it's sizzling out there! Time for shorts and a tank top!"
+    elif 20 < temperature <= 30:
+        if "rain" in weather_condition:
+            return "Warm but wet, eh? Go for a tee and don't forget that umbrella!"
+        return "It's T-shirt weather! Maybe grab some sunglasses too."
+    elif 10 < temperature <= 20:
+        if "rain" in weather_condition:
+            return "A bit chilly with a splash! A jacket and maybe an umbrella will serve you well."
+        return "Feeling the breeze? A sweater or a light jacket should do the trick."
+    else:
+        if "snow" in weather_condition:
+            return "Brrr! Snowball fight anyone? Bundle up with a thick coat, gloves, and a hat!"
+        return "Freezing cold! Time to rock that winter coat and maybe a scarf and gloves!"
+
 
 # The State class defines all the variables that can change, as well as the event handlers that change them.
 class State(rx.State):
@@ -227,10 +243,8 @@ class State(rx.State):
             self.weather_error_message = "City not found. Please enter a valid city name."
             self.cityname_input = ""
 
-    # Clothing advice attributes
+    # Clothing advice: Provides clothing advice based on the weather condition and wardrobe items.
     clothing_advice: str = ""
-    
-    # Set the clothing advice based on the temperature and weather condition.
     def set_clothing_advice(self):
         temp = int(self.temperature)
         condition = self.weather_condition.lower()
@@ -282,7 +296,7 @@ class State(rx.State):
     def set_reselected_suitable_temperature(self, value):
         self.reselected_suitable_temperature = value
         
-    # Fetch the data from the database with conditions.
+    # Fetch the recommendations from the database.
     def fetch_recommendations(self, suitable_temperature, is_waterproof):
         with rx.session() as session:
             statement = select(Items) \
@@ -294,7 +308,6 @@ class State(rx.State):
                       "type": item.type, 
                       "suitable_temperature": item.suitable_temperature,
                       "is_waterproof": item.is_waterproof,
-                      "description": item.description
                       }
                      for item in recommendations]
     
@@ -307,7 +320,6 @@ class State(rx.State):
                       "type": item.type, 
                       "suitable_temperature": item.suitable_temperature,
                       "is_waterproof": item.is_waterproof,
-                      "description": item.description
                       }
                      for item in items_list]
     
@@ -319,7 +331,6 @@ class State(rx.State):
                 name=form_data.get("name"),
                 suitable_temperature=self.selected_suitable_temperature,
                 is_waterproof=self.selected_is_waterproof,
-                description=form_data.get("description"),
             )
             session.add(data)
             session.commit()
@@ -333,7 +344,6 @@ class State(rx.State):
         new_name = form_data.get("edit_name")
         new_suitable_temperature = self.reselected_suitable_temperature
         new_is_waterproof = self.reselected_is_waterproof
-        new_description = form_data.get("edit_description") if form_data.get("edit_description") is not None else ''
         with rx.session() as session:
             # search for the item to edit
             item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
@@ -343,7 +353,6 @@ class State(rx.State):
                 item_to_edit.name = new_name
                 item_to_edit.suitable_temperature = new_suitable_temperature
                 item_to_edit.is_waterproof = new_is_waterproof
-                item_to_edit.description = new_description
                 session.commit()
         app = rx.App()
         app.compile()
@@ -374,24 +383,6 @@ class State(rx.State):
     def handle_delete_item_id_change(self, value):
         self.delete_item_id = value
         
-
-# Clothing advice algorithm: Provides clothing advice based on the given temperature and weather condition.
-def get_default_clothing_advice(temperature, weather_condition):
-    if temperature > 30:
-        return "Whoa, it's sizzling out there! Time for shorts and a tank top!"
-    elif 20 < temperature <= 30:
-        if "rain" in weather_condition:
-            return "Warm but wet, eh? Go for a tee and don't forget that umbrella!"
-        return "It's T-shirt weather! Maybe grab some sunglasses too."
-    elif 10 < temperature <= 20:
-        if "rain" in weather_condition:
-            return "A bit chilly with a splash! A jacket and maybe an umbrella will serve you well."
-        return "Feeling the breeze? A sweater or a light jacket should do the trick."
-    else:
-        if "snow" in weather_condition:
-            return "Brrr! Snowball fight anyone? Bundle up with a thick coat, gloves, and a hat!"
-        return "Freezing cold! Time to rock that winter coat and maybe a scarf and gloves!"
-
 
 # Instantiate the State class
 state = State()
@@ -579,7 +570,6 @@ def wardrobe_page() -> rx.Component:
                             value=State.selected_type,
                         ),
                         rx.input(placeholder="Name (e.g., Jeans)", id="name"),
-                        rx.input(placeholder="Description (Optional)", id="description"),
                         rx.select(
                             temperature_types,
                             placeholder="Select suitable temperature",
@@ -612,17 +602,16 @@ def wardrobe_page() -> rx.Component:
                         rx.input(placeholder="New Name", id="edit_name"),
                         rx.select(
                             temperature_types,
-                            placeholder="New Select suitable temperature",
+                            placeholder="Select suitable temperature",
                             on_change=State.set_reselected_suitable_temperature,
                             value=State.reselected_suitable_temperature,
                         ),
                         rx.select(
                             ["True", "False"],
-                            placeholder="New Is your clothes waterproof?",
+                            placeholder="Is your clothes waterproof?",
                             on_change=State.set_reselected_is_waterproof,
                             value=State.reselected_is_waterproof,
                         ),
-                        rx.input(placeholder="New Description", id="edit_description"),
                         rx.button("Edit Item", type_="submit"),
                     ),
                     on_submit=State.handle_edit_submit,
