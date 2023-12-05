@@ -302,7 +302,7 @@ class State(rx.State):
             statement = select(Items) \
                 .where(Items.suitable_temperature == suitable_temperature) \
                 .where(Items.is_waterproof == is_waterproof)
-            recommendations = session.exec(statement)
+            recommendations = session.exec(statement).all()
             return [{"id": item.id, 
                       "name": item.name, 
                       "type": item.type, 
@@ -314,14 +314,15 @@ class State(rx.State):
     # Fetch the data from the database.
     def fetch_data(self):
         with rx.session() as session:
-            items_list = session.query(Items).all()
-        self.data = [{"id": item.id, 
-                      "name": item.name, 
-                      "type": item.type, 
-                      "suitable_temperature": item.suitable_temperature,
-                      "is_waterproof": item.is_waterproof,
-                      }
-                     for item in items_list]
+            statement = select(Items)
+            items_list = session.exec(statement).all()
+            self.data = [{"id": item.id, 
+                          "name": item.name, 
+                          "type": item.type, 
+                          "suitable_temperature": item.suitable_temperature,
+                          "is_waterproof": item.is_waterproof,
+                          }
+                         for item in items_list]
     
     # Add a new item to the database.
     def handle_add_submit(self, form_data:dict):
@@ -360,7 +361,8 @@ class State(rx.State):
     # Delete the latest item from the database.
     def delete_latest_item(self):
         with rx.session() as session:
-            latest_item = session.query(Items).order_by(Items.id.desc()).first()
+            statement = select(Items).order_by(Items.id.desc())
+            latest_item = session.exec(statement).first()
             if latest_item:
                 session.delete(latest_item)
                 session.commit()
