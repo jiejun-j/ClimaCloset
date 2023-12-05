@@ -110,8 +110,8 @@ engine = create_engine(DATABASE_URL)
 # Items table: define the table schema.
 class Items(SQLModel, table=True):
     id: int = Field(primary_key=True)
-    name: str
     type: str
+    name: str
     description: Optional[str] = ""
 
 # Create the table in the database.
@@ -243,15 +243,15 @@ class State(rx.State):
     def fetch_data(self):
         with rx.session() as session:
             items_list = session.query(Items).all()
-        self.data = [{"id": item.id, "name": item.name, "type": item.type, "description": item.description}
+        self.data = [{"id": item.id, "type": item.type, "name": item.name, "description": item.description}
                      for item in items_list]
     
     # Add a new item to the database.
     def handle_add_submit(self, form_data:dict):
         with rx.session() as session:
             data = Items(
-                name=form_data.get("name"),
                 type=self.selected_type,
+                name=form_data.get("name"),
                 description=form_data.get("description"),
             )
             session.add(data)
@@ -262,16 +262,16 @@ class State(rx.State):
     # Edit an existing item in the database.
     def handle_edit_submit(self, form_data: dict):
         item_id = form_data.get("edit_id")
-        new_name = form_data.get("edit_name")
         new_type = self.reselected_type
+        new_name = form_data.get("edit_name")
         new_description = form_data.get("edit_description") if form_data.get("edit_description") is not None else ''
         with rx.session() as session:
             # search for the item to edit
             item_to_edit = session.query(Items).filter(Items.id == int(item_id)).first()
             if item_to_edit:
                 # update the item
-                item_to_edit.name = new_name
                 item_to_edit.type = new_type
+                item_to_edit.name = new_name
                 item_to_edit.description = new_description
                 session.commit()
         app = rx.App()
@@ -501,14 +501,14 @@ def wardrobe_page() -> rx.Component:
                 # Add item
                 rx.form(           
                     rx.vstack(
-                        rx.input(placeholder="Name", id="name"),
                         rx.select(
                             clothing_types,
                             placeholder="Select Type",
                             on_change=State.set_selected_type,
                             value=State.selected_type,
                         ),
-                        rx.input(placeholder="Description", id="description"),
+                        rx.input(placeholder="Name (e.g., Jeans)", id="name"),
+                        rx.input(placeholder="Description (Optional)", id="description"),
                         rx.button("Add Item", type_="submit"),
                         style=css.get("multiple_stack"),
                     ),
@@ -520,13 +520,13 @@ def wardrobe_page() -> rx.Component:
                 rx.form(
                     rx.vstack(
                         rx.input(placeholder="ID", id="edit_id"),
-                        rx.input(placeholder="New Name", id="edit_name"),
                         rx.select(
                             clothing_types,
                             placeholder="New Select Type",
                             on_change=State.set_reselected_type,
 	                        value=State.reselected_type,
                         ),
+                        rx.input(placeholder="New Name", id="edit_name"),
                         rx.input(placeholder="New Description", id="edit_description"),
                         rx.button("Edit Item", type_="submit"),
                     ),
