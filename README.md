@@ -1,4 +1,4 @@
-# Weather Assistent
+# Weather Assistant
 
 ## Installation and Setup
 
