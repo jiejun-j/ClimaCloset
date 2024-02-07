@@ -2,7 +2,10 @@ import reflex as rx
 import pandas as pd
 import requests
 import datetime
+import os
 from sqlmodel import SQLModel, Field, create_engine, select
+from dotenv import load_dotenv
+from urllib.parse import urlencode
 
 # CSS Stylesheet
 css: dict = {
@@ -75,11 +78,21 @@ css: dict = {
     },
 }
 
+# Get the API key from the environment variables.
+load_dotenv()
+API_KEY: str = os.getenv("KEY")
 
-# Weather API: get the weather data for the given city.
+# API request: construct the URL based on the given city name.
 def get_weather_request(city: str):
     base_url = "https://api.openweathermap.org/data/2.5/weather"
-    full_url = f"{base_url}?q={city}&appid=7c9495e301fb54d62adb32527d93cc87&units=metric"
+    query_parameters = {
+        "q": city,
+        "appid": API_KEY,
+        "units": "metric"
+    }
+    encoded_parameters = urlencode(query_parameters)
+    full_url = f"{base_url}?{encoded_parameters}"
+
     return full_url
 
 # Weather images: map the weather condition to the corresponding image.
