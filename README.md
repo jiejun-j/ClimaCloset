@@ -39,14 +39,8 @@ Ensure you have Python installed on your system. This application requires Pytho
     ```bash
     pip install reflex requests python-dotenv
     ```
-
-4. **Initialize the application and database:**
-    ```bash
-    reflex init
-    reflex db init
-    ```
     
-5. **Setup Environment Variables:**
+4. **Setup Environment Variables:**
     - Get API key from: https://openweathermap.org/api
     - Create a `.env` file in the root directory.
     - Add your OpenWeatherMap API key to the .env file:
@@ -54,7 +48,7 @@ Ensure you have Python installed on your system. This application requires Pytho
     KEY=YOUR_OPENWEATHERMAP_API_KEY
     ```
     
-6. **Preview the application locally:**
+5. **Preview the application locally:**
     ```bash
     reflex run
     ```
